@@ -5,6 +5,7 @@
 
 #include <sys/stat.h>
 #include <sys/types.h>
+#include <errno.h>
 #include <poll.h>
 #include <fcntl.h>
 #include <stdio.h>
@@ -81,8 +82,31 @@ int GPIODirection(int pin, int dir)
 	return 0;
 }
 
+int GPIOInterrupt(int pin)
+{
+	char path[BUFSZ] = {0};
+	const char when_to_return[] = "both";
+	int fd;
+
+	snprintf(path, BUFSZ, "/sys/class/gpio/gpio%d/edge", pin);
+	fd = open(path, O_WRONLY);
+	if (-1 == fd) {
+		fprintf(stderr, "Failed to open gpio edge\n");
+		return -1;
+	}
+
+	if (-1 == write(fd, when_to_return, 4)) {
+		fprintf(stderr, "Failed to configure gpio as interrupt source\n");
+		return -1;
+	}
+
+	close(fd);
+	return 0;
+}
+
 int GPIOWait(int pin)
 {
+	int value = -1;
 	char path[BUFSZ] = {0};
 	char value_str[BUFSZ] = {0};
 	int fd;
@@ -96,18 +120,21 @@ int GPIOWait(int pin)
 	}
 
 	//wait for kernel to notify us of changes
-	int value = -1;
-	int done = 0;
 	struct pollfd pfds[1];
 	pfds[0].fd = fd;
 	pfds[0].events = POLLPRI | POLLERR;
 
-	while(!done) {
+	for (;;) {
 
 		int rc = poll(pfds, 1, -1);
 		if(rc < 0) {
+			int errsv = errno;
 			perror("An error occurred while waiting for the switch");
-		} else {
+			if(errsv != EAGAIN && errsv != EINTR && errsv != EINVAL)
+				return -1;
+		}
+
+		if(pfds[0].revents & POLLPRI) {
 			lseek(fd, 0, SEEK_SET);
 			//read the value
 			if (-1 == read(fd, value_str, BUFSZ)) {
@@ -115,18 +142,17 @@ int GPIOWait(int pin)
 				return -1;
 			}
 			value = atoi(value_str);
-			done = 1;
+			if (value == LOW) {
+				close(fd);
+				return value;
+			}
 		}
 	}
-
-	close(fd);
-
-	return value;
 }
 
 int GPIOWrite(int pin, int value)
 {
-	static const char s_values_str[] = "01";
+	const char s_values_str[] = "01";
 
 	char path[BUFSZ] = {0};
 	int fd;
@@ -149,25 +175,62 @@ int GPIOWrite(int pin, int value)
 
 int main(int argc, char *argv[])
 {
+	pid_t pid, sid;
+
+	//fork parent process
+	pid = fork();
+	if(pid < 0) {
+		perror("An error occurred while attempting to fork()");
+		exit(EXIT_FAILURE);
+	}
+
+	if(pid > 0) {
+		exit(EXIT_SUCCESS);
+	}
+
+	//change file mode mask
+	umask(0);
+
+	//create unique session id
+	sid = setsid();
+	if(sid < 0) {
+		perror("An error occurred while creating the session");
+		exit(EXIT_FAILURE);
+	}
+
+	//change working directory
+	if((chdir("/")) < 0) {
+		perror("An error occurred while changing the working directory");
+		exit(EXIT_FAILURE);
+	}
+
+	//close standard file descriptors
+	close(STDIN_FILENO);
+	close(STDOUT_FILENO);
+	close(STDERR_FILENO);
+
 	// Enable GPIO pins
 	if (-1 == GPIOExport(POUT) || -1 == GPIOExport(PIN))
-		return 1;
+		exit(EXIT_FAILURE);
 
 	// Set GPIO directions
 	if (-1 == GPIODirection(POUT, OUT) || -1 == GPIODirection(PIN, IN))
-		return 2;
+		exit(EXIT_FAILURE);
 
 	// Initialize switch state
 	if (-1 == GPIOWrite(POUT, HIGH))
-		return 3;
+		exit(EXIT_FAILURE);
+
+	if (-1 == GPIOInterrupt(POUT))
+		exit(EXIT_FAILURE);
 
 	// Wait for switch state to change
-	GPIOWait(PIN);
-
+	int result = GPIOWait(POUT);
+	printf("Received a %d from gpiowait!\n", result);
 
 	// Disable GPIO pins
 	if (-1 == GPIOUnexport(POUT) || -1 == GPIOUnexport(PIN))
-		return 4;
+		exit(EXIT_FAILURE);
 
 	// Shutdown
 	system("echo 'shutting down!'");
