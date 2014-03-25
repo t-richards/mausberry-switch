@@ -1,5 +1,11 @@
-mausberry (0.1-1) UNRELEASED; urgency=low
+mausberry-switch (0.2) unstable; urgency=low
 
-  * Initial release.
+  * Fixed source and package building
 
- -- Tom Richards <tom@tomrichards.net>  Tue, 25 Mar 2014 09:22:31 -0400
+ -- Tom Richards <tom@tomrichards.net>  Tue, 25 Mar 2014 15:34:39 -0400
+
+mausberry-switch (0.1) unstable; urgency=low
+
+  * Initial release
+
+ -- Tom Richards <tom@tomrichards.net>  Tue, 25 Mar 2014 14:00:52 -0400
