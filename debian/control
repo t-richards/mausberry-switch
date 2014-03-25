@@ -1,0 +1,12 @@
+Source: mausberry
+Maintainer: Tom Richards <tom@tomrichards.net>
+Section: misc
+Priority: optional
+Standards-Version: 3.9.4
+Build-Depends: debhelper (>= 9)
+
+Package: mausberry
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:depends}
+Description: Daemon for Mausberry hardware.
+  Monitors a switch on GPIO and shuts down the system when a low signal is received.
