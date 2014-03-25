@@ -5,6 +5,7 @@
 
 #include <sys/stat.h>
 #include <sys/types.h>
+#include <poll.h>
 #include <fcntl.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -95,36 +96,32 @@ int GPIOWait(int pin)
 	}
 
 	//wait for kernel to notify us of changes
+	int value = -1;
 	int done = 0;
-	fd_set active_fd_set, read_fd_set;
-	FD_ZERO(&active_fd_set);
-	FD_SET(pinfd, &active_fd_set);
-	struct timeval tv = {0, 500};
+	struct pollfd pfds[1];
+	pfds[0].fd = fd;
+	pfds[0].events = POLLPRI | POLLERR;
 
 	while(!done) {
 
-		read_fd_set = active_fd_set;
-		if(select(FD_SETSIZE, &read_fd_set, NULL, NULL, &tv) < 0) {
-			perror("An error occurred while waiting for the switch to be flipped");
-		}
-
-		int i;
-		for(i=0; i < FD_SETSIZE; i++) {
-			if(FD_ISSET(i, &read_fd_set)) {
-				if(i == //... to be continued
+		int rc = poll(pfds, 1, -1);
+		if(rc < 0) {
+			perror("An error occurred while waiting for the switch");
+		} else {
+			lseek(fd, 0, SEEK_SET);
+			//read the value
+			if (-1 == read(fd, value_str, BUFSZ)) {
+				fprintf(stderr, "Failed to read value!\n");
+				return -1;
 			}
+			value = atoi(value_str);
+			done = 1;
 		}
-	}
-
-	//read the value
-	if (-1 == read(fd, value_str, BUFSZ)) {
-		fprintf(stderr, "Failed to read value!\n");
-		return -1;
 	}
 
 	close(fd);
 
-	return atoi(value_str);
+	return value;
 }
 
 int GPIOWrite(int pin, int value)
@@ -165,7 +162,7 @@ int main(int argc, char *argv[])
 		return 3;
 
 	// Wait for switch state to change
-	GPIO_Wait(PIN);
+	GPIOWait(PIN);
 
 
 	// Disable GPIO pins
