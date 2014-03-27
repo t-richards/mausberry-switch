@@ -9,9 +9,9 @@
 #include <poll.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <syslog.h>
 #include <sys/stat.h>
 #include <sys/types.h>
+#include <syslog.h>
 #include <unistd.h>
 
 #define IN  0
@@ -51,7 +51,7 @@ int GPIOUnexport(int pin)
 
 	fd = open("/sys/class/gpio/unexport", O_WRONLY);
 	if (-1 == fd) {
-		syslog(LOG_CRIT, "Failed to open unexport for writing: %m\n");
+		syslog(LOG_WARNING, "Failed to open unexport for writing: %m\n");
 		return -1;
 	}
 
@@ -235,7 +235,7 @@ int main(int argc, char *argv[])
 
 	// Disable GPIO pins
 	if (-1 == GPIOUnexport(POUT) || -1 == GPIOUnexport(PIN))
-		exit(EXIT_FAILURE);
+		syslog(LOG_WARNING, "Could not unexport gpio pins before shutting down.");
 
 	// Shutdown
 	syslog(LOG_NOTICE, "Shutting down.");
