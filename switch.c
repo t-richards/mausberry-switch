@@ -1,15 +1,17 @@
 /*
  * switch.c
  * Raspberry Pi GPIO for use with Mausberry switches.
+ * Lots of code adapted from http://elinux.org/RPi_Low-level_peripherals
  */
 
-#include <sys/stat.h>
-#include <sys/types.h>
 #include <errno.h>
-#include <poll.h>
 #include <fcntl.h>
+#include <poll.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <syslog.h>
+#include <sys/stat.h>
+#include <sys/types.h>
 #include <unistd.h>
 
 #define IN  0
@@ -31,7 +33,7 @@ int GPIOExport(int pin)
 
 	fd = open("/sys/class/gpio/export", O_WRONLY);
 	if (-1 == fd) {
-		fprintf(stderr, "Failed to open export for writing!\n");
+		syslog(LOG_CRIT, "Failed to open export for writing: %m\n");
 		return -1;
 	}
 
@@ -49,7 +51,7 @@ int GPIOUnexport(int pin)
 
 	fd = open("/sys/class/gpio/unexport", O_WRONLY);
 	if (-1 == fd) {
-		fprintf(stderr, "Failed to open unexport for writing!\n");
+		syslog(LOG_CRIT, "Failed to open unexport for writing: %m\n");
 		return -1;
 	}
 
@@ -69,12 +71,12 @@ int GPIODirection(int pin, int dir)
 	snprintf(path, BUFSZ, "/sys/class/gpio/gpio%d/direction", pin);
 	fd = open(path, O_WRONLY);
 	if (-1 == fd) {
-		fprintf(stderr, "Failed to open gpio direction for writing!\n");
+		syslog(LOG_CRIT, "Failed to open gpio direction for writing: %m\n");
 		return -1;
 	}
 
 	if (-1 == write(fd, &s_directions_str[IN == dir ? 0 : 3], IN == dir ? 2 : 3)) {
-		fprintf(stderr, "Failed to set direction!\n");
+		syslog(LOG_CRIT, "Failed to set gpio direction: %m\n");
 		return -1;
 	}
 
@@ -91,12 +93,12 @@ int GPIOInterrupt(int pin)
 	snprintf(path, BUFSZ, "/sys/class/gpio/gpio%d/edge", pin);
 	fd = open(path, O_WRONLY);
 	if (-1 == fd) {
-		fprintf(stderr, "Failed to open gpio edge\n");
+		syslog(LOG_CRIT, "Failed to open gpio edge for writing: %m\n");
 		return -1;
 	}
 
 	if (-1 == write(fd, when_to_return, 4)) {
-		fprintf(stderr, "Failed to configure gpio as interrupt source\n");
+		syslog(LOG_CRIT, "Failed to configure gpio as interrupt source: %m\n");
 		return -1;
 	}
 
@@ -111,11 +113,11 @@ int GPIOWait(int pin)
 	char value_str[BUFSZ] = {0};
 	int fd;
 
-	//open gpio file descriptor for select
+	//open gpio file descriptor
 	snprintf(path, BUFSZ, "/sys/class/gpio/gpio%d/value", pin);
 	fd = open(path, O_RDONLY);
 	if (-1 == fd) {
-		fprintf(stderr, "Failed to open gpio value for reading!\n");
+		syslog(LOG_CRIT, "Failed to open gpio value for reading: %m\n");
 		return -1;
 	}
 
@@ -129,16 +131,17 @@ int GPIOWait(int pin)
 		int rc = poll(pfds, 1, -1);
 		if(rc < 0) {
 			int errsv = errno;
-			perror("An error occurred while waiting for the switch");
-			if(errsv != EAGAIN && errsv != EINTR && errsv != EINVAL)
+			if(errsv != EAGAIN && errsv != EINTR && errsv != EINVAL) {
+				syslog(LOG_CRIT, "An error occurred while polling the switch: %m\n");
 				return -1;
+			}
 		}
 
 		if(pfds[0].revents & POLLPRI) {
 			lseek(fd, 0, SEEK_SET);
 			//read the value
 			if (-1 == read(fd, value_str, BUFSZ)) {
-				fprintf(stderr, "Failed to read value!\n");
+				syslog(LOG_CRIT, "Failed to read switch value: %m\n");
 				return -1;
 			}
 			value = atoi(value_str);
@@ -160,12 +163,12 @@ int GPIOWrite(int pin, int value)
 	snprintf(path, BUFSZ, "/sys/class/gpio/gpio%d/value", pin);
 	fd = open(path, O_WRONLY);
 	if (-1 == fd) {
-		fprintf(stderr, "Failed to open gpio value for writing!\n");
+		syslog(LOG_CRIT, "Failed to open gpio value for writing: %m\n");
 		return -1;
 	}
 
 	if (1 != write(fd, &s_values_str[LOW == value ? 0 : 1], 1)) {
-		fprintf(stderr, "Failed to write value!\n");
+		syslog(LOG_CRIT, "Failed to write value: %m\n");
 		return -1;
 	}
 
@@ -175,12 +178,12 @@ int GPIOWrite(int pin, int value)
 
 int main(int argc, char *argv[])
 {
+	//begin daemonize
 	pid_t pid, sid;
 
 	//fork parent process
 	pid = fork();
 	if(pid < 0) {
-		perror("An error occurred while attempting to fork()");
 		exit(EXIT_FAILURE);
 	}
 
@@ -194,13 +197,11 @@ int main(int argc, char *argv[])
 	//create unique session id
 	sid = setsid();
 	if(sid < 0) {
-		perror("An error occurred while creating the session");
 		exit(EXIT_FAILURE);
 	}
 
 	//change working directory
 	if((chdir("/")) < 0) {
-		perror("An error occurred while changing the working directory");
 		exit(EXIT_FAILURE);
 	}
 
@@ -208,6 +209,9 @@ int main(int argc, char *argv[])
 	close(STDIN_FILENO);
 	close(STDOUT_FILENO);
 	close(STDERR_FILENO);
+
+	//open syslog
+	openlog("mausberry-switch", LOG_PID, LOG_DAEMON);
 
 	// Enable GPIO pins
 	if (-1 == GPIOExport(POUT) || -1 == GPIOExport(PIN))
@@ -221,19 +225,23 @@ int main(int argc, char *argv[])
 	if (-1 == GPIOWrite(POUT, HIGH))
 		exit(EXIT_FAILURE);
 
+	// Register 'out' pin as interrupt source
 	if (-1 == GPIOInterrupt(POUT))
 		exit(EXIT_FAILURE);
 
 	// Wait for switch state to change
 	int result = GPIOWait(POUT);
-	printf("Received a %d from gpiowait!\n", result);
+	syslog(LOG_NOTICE, "Received a %d from gpiowait!\n", result);
 
 	// Disable GPIO pins
 	if (-1 == GPIOUnexport(POUT) || -1 == GPIOUnexport(PIN))
 		exit(EXIT_FAILURE);
 
 	// Shutdown
-	system("echo 'shutting down!'");
+	syslog(LOG_NOTICE, "Shutting down.");
+
+	//TODO: Uncomment me!
+	//system("shutdown -h now");
 
 	return 0;
 }
