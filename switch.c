@@ -239,9 +239,7 @@ int main(int argc, char *argv[])
 
 	// Shutdown
 	syslog(LOG_NOTICE, "Shutting down.");
-
-	//TODO: Uncomment me!
-	//system("shutdown -h now");
+	system("shutdown -h now");
 
 	return 0;
 }
