@@ -1,6 +1,6 @@
 #! /bin/sh
 ### BEGIN INIT INFO
-# Provides:          mausberry
+# Provides:          mausberry-switch
 # Required-Start:    $remote_fs $syslog
 # Required-Stop:     $remote_fs $syslog
 # Default-Start:     2 3 4 5
@@ -13,7 +13,7 @@
 # PATH should only include /usr/* if it runs after the mountnfs.sh script
 PATH=/sbin:/usr/sbin:/bin:/usr/bin
 DESC="Mausberry PI Switch"
-NAME=mausberry
+NAME=mausberry-switch
 DAEMON=/usr/bin/mausberry-switch
 DAEMON_ARGS=""
 PIDFILE=/var/run/$NAME.pid
