@@ -151,7 +151,7 @@ int GPIOWait(int pin)
 				return -1;
 			}
 			value = atoi(value_str);
-			if (value == LOW) {
+			if (value == HIGH) {
 				close(fd);
 				return value;
 			}
