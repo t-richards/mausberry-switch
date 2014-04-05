@@ -39,7 +39,7 @@ int GPIOExport(int pin)
 
 	fd = open("/sys/class/gpio/export", O_WRONLY);
 	if (-1 == fd) {
-		syslog(LOG_CRIT, "Failed to open export for writing: %m\n");
+		syslog(LOG_WARNING, "Failed to open export for writing: %m\n");
 		return -1;
 	}
 
@@ -77,12 +77,12 @@ int GPIODirection(int pin, int dir)
 	snprintf(path, BUFSZ, "/sys/class/gpio/gpio%d/direction", pin);
 	fd = open(path, O_WRONLY);
 	if (-1 == fd) {
-		syslog(LOG_CRIT, "Failed to open gpio direction for writing: %m\n");
+		syslog(LOG_WARNING, "Failed to open gpio direction for writing: %m\n");
 		return -1;
 	}
 
 	if (-1 == write(fd, &s_directions_str[IN == dir ? 0 : 3], IN == dir ? 2 : 3)) {
-		syslog(LOG_CRIT, "Failed to set gpio direction: %m\n");
+		syslog(LOG_WARNING, "Failed to set gpio direction: %m\n");
 		return -1;
 	}
 
@@ -99,12 +99,12 @@ int GPIOInterrupt(int pin)
 	snprintf(path, BUFSZ, "/sys/class/gpio/gpio%d/edge", pin);
 	fd = open(path, O_WRONLY);
 	if (-1 == fd) {
-		syslog(LOG_CRIT, "Failed to open gpio edge for writing: %m\n");
+		syslog(LOG_WARNING, "Failed to open gpio edge for writing: %m\n");
 		return -1;
 	}
 
 	if (-1 == write(fd, when_to_return, 4)) {
-		syslog(LOG_CRIT, "Failed to configure gpio as interrupt source: %m\n");
+		syslog(LOG_WARNING, "Failed to configure gpio as interrupt source: %m\n");
 		return -1;
 	}
 
@@ -123,7 +123,7 @@ int GPIOWait(int pin)
 	snprintf(path, BUFSZ, "/sys/class/gpio/gpio%d/value", pin);
 	fd = open(path, O_RDONLY);
 	if (-1 == fd) {
-		syslog(LOG_CRIT, "Failed to open gpio value for reading: %m\n");
+		syslog(LOG_WARNING, "Failed to open gpio value for reading: %m\n");
 		return -1;
 	}
 
@@ -138,7 +138,7 @@ int GPIOWait(int pin)
 		if(rc < 0) {
 			int errsv = errno;
 			if(errsv != EAGAIN && errsv != EINTR && errsv != EINVAL) {
-				syslog(LOG_CRIT, "An error occurred while polling the switch: %m\n");
+				syslog(LOG_WARNING, "An error occurred while polling the switch: %m\n");
 				return -1;
 			}
 		}
@@ -147,7 +147,7 @@ int GPIOWait(int pin)
 			lseek(fd, 0, SEEK_SET);
 			//read the value
 			if (-1 == read(fd, value_str, BUFSZ)) {
-				syslog(LOG_CRIT, "Failed to read switch value: %m\n");
+				syslog(LOG_WARNING, "Failed to read switch value: %m\n");
 				return -1;
 			}
 			value = atoi(value_str);
@@ -169,12 +169,12 @@ int GPIOWrite(int pin, int value)
 	snprintf(path, BUFSZ, "/sys/class/gpio/gpio%d/value", pin);
 	fd = open(path, O_WRONLY);
 	if (-1 == fd) {
-		syslog(LOG_CRIT, "Failed to open gpio value for writing: %m\n");
+		syslog(LOG_WARNING, "Failed to open gpio value for writing: %m\n");
 		return -1;
 	}
 
 	if (1 != write(fd, &s_values_str[LOW == value ? 0 : 1], 1)) {
-		syslog(LOG_CRIT, "Failed to write value: %m\n");
+		syslog(LOG_WARNING, "Failed to write value: %m\n");
 		return -1;
 	}
 
@@ -211,7 +211,8 @@ int main(int argc, char *argv[])
 		exit(EXIT_FAILURE);
 	}
 
-	//setup signal handler
+	//setup signal handlers
+	signal(SIGCHLD, SIG_IGN);
 	signal(SIGHUP, SignalHandler);
 	signal(SIGTERM, SignalHandler);
 
@@ -223,21 +224,25 @@ int main(int argc, char *argv[])
 	//open syslog
 	openlog("mausberry-switch", LOG_PID, LOG_DAEMON);
 
+	// Reset GPIO pins
+	if (-1 == GPIOUnexport(POUT) || -1 == GPIOUnexport(PIN))
+		syslog(LOG_WARNING, "GPIO pins not reset.");
+
 	// Enable GPIO pins
 	if (-1 == GPIOExport(POUT) || -1 == GPIOExport(PIN))
-		exit(EXIT_FAILURE);
+		syslog(LOG_WARNING, "GPIO pins not exported.");
 
 	// Set GPIO directions
 	if (-1 == GPIODirection(POUT, IN) || -1 == GPIODirection(PIN, OUT))
-		exit(EXIT_FAILURE);
+		syslog(LOG_WARNING, "GPIO directions not set.");
 
 	// Initialize switch state
 	if (-1 == GPIOWrite(POUT, HIGH))
-		exit(EXIT_FAILURE);
+		syslog(LOG_WARNING, "GPIO not initialized.");
 
 	// Register 'out' pin as interrupt source
 	if (-1 == GPIOInterrupt(POUT))
-		exit(EXIT_FAILURE);
+		syslog(LOG_WARNING, "GPIO not configured as interrupt.");
 
 	// Wait for switch state to change
 	int result = GPIOWait(POUT);
