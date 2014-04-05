@@ -7,6 +7,7 @@
 #include <errno.h>
 #include <fcntl.h>
 #include <poll.h>
+#include <signal.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <sys/stat.h>
@@ -24,6 +25,11 @@
 #define POUT 23
 
 #define BUFSZ 64
+
+void SignalHandler(int sig)
+{
+	exit(EXIT_SUCCESS);
+}
 
 int GPIOExport(int pin)
 {
@@ -205,6 +211,10 @@ int main(int argc, char *argv[])
 		exit(EXIT_FAILURE);
 	}
 
+	//setup signal handler
+	signal(SIGHUP, SignalHandler);
+	signal(SIGTERM, SignalHandler);
+
 	//close standard file descriptors
 	close(STDIN_FILENO);
 	close(STDOUT_FILENO);
@@ -218,7 +228,7 @@ int main(int argc, char *argv[])
 		exit(EXIT_FAILURE);
 
 	// Set GPIO directions
-	if (-1 == GPIODirection(POUT, OUT) || -1 == GPIODirection(PIN, IN))
+	if (-1 == GPIODirection(POUT, IN) || -1 == GPIODirection(PIN, OUT))
 		exit(EXIT_FAILURE);
 
 	// Initialize switch state
