@@ -237,7 +237,7 @@ int main(int argc, char *argv[])
 		syslog(LOG_WARNING, "GPIO directions not set.");
 
 	// Initialize switch state
-	if (-1 == GPIOWrite(POUT, HIGH))
+	if (-1 == GPIOWrite(PIN, HIGH))
 		syslog(LOG_WARNING, "GPIO not initialized.");
 
 	// Register 'out' pin as interrupt source
