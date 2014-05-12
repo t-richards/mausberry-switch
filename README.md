@@ -37,11 +37,12 @@ Here's the output of `top` showing the CPU and RAM usage of this program:
 
 ## Alright, I'm convinced. How do I install this thing?
 
-Here's a [debian binary package of the latest version](https://tomrichards.net/downloads/mausberry-switch_0.3_armhf.deb), compiled for armv6, little endian, hard float. You can install it on your PI by following these instructions.
+Here's a [debian binary package of the latest version](https://tomrichards.net/downloads/mausberry-switch_0.4_armhf.deb), compiled for armv6, little endian, hard float. You can install it on your PI by following these instructions.
+
 1. SSH to your Raspberry PI.
 2. Run these commands.
 
-    $ wget https://tomrichards.net/downloads/mausberry-switch_0.3_armhf.deb
+    $ wget https://tomrichards.net/downloads/mausberry-switch_0.4_armhf.deb
     $ sudo dpkg -i mausberry-switch_0.3_armhf.deb
     $ sudo service mausberry-switch restart
     $ sudo insserv mausberry-switch
