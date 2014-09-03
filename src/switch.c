@@ -6,6 +6,7 @@
 
 #include <errno.h>
 #include <fcntl.h>
+#include <libconfig.h>
 #include <poll.h>
 #include <signal.h>
 #include <stdio.h>
@@ -28,6 +29,7 @@
 
 void SignalHandler(int sig)
 {
+	syslog(LOG_NOTICE, "Caught signal, terminating mausberry-switch daemon.");
 	exit(EXIT_SUCCESS);
 }
 
@@ -184,6 +186,7 @@ int GPIOWrite(int pin, int value)
 
 int main(int argc, char *argv[])
 {
+
 	//begin daemonize
 	pid_t pid, sid;
 
@@ -211,11 +214,6 @@ int main(int argc, char *argv[])
 		exit(EXIT_FAILURE);
 	}
 
-	//setup signal handlers
-	signal(SIGCHLD, SIG_IGN);
-	signal(SIGHUP, SignalHandler);
-	signal(SIGTERM, SignalHandler);
-
 	//close standard file descriptors
 	close(STDIN_FILENO);
 	close(STDOUT_FILENO);
@@ -223,6 +221,32 @@ int main(int argc, char *argv[])
 
 	//open syslog
 	openlog("mausberry-switch", LOG_PID, LOG_DAEMON);
+
+	//setup signal handlers
+	signal(SIGCHLD, SIG_IGN);
+	signal(SIGHUP, SignalHandler);
+	signal(SIGTERM, SignalHandler);
+
+	//config initialization
+	config_t cfg;
+	config_setting_t *setting;
+	int delay = 0;
+	config_init(&cfg);
+
+	//open config file
+	if(!config_read_file(&cfg, "/etc/mausberry-switch.cfg")) {
+		syslog(LOG_ERR, "%s:%d - %s\n", config_error_file(&cfg), config_error_line(&cfg), config_error_text(&cfg));
+		config_destroy(&cfg);
+		exit(EXIT_FAILURE);
+	}
+
+	//read shutdown delay configuration
+	if(config_lookup_int(&cfg, "delay", &delay)) {
+		syslog(LOG_NOTICE, "Mausberry switch shutdown delay: %d seconds", delay);
+	} else {
+		syslog(LOG_NOTICE, "Mausberry switch shutdown delay not found in config file. Using default of 0 seconds.");
+	}
+	config_destroy(&cfg);
 
 	// Reset GPIO pins
 	if (-1 == GPIOUnexport(POUT) || -1 == GPIOUnexport(PIN))
