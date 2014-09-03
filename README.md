@@ -42,9 +42,11 @@ Here's a [debian binary package of the latest version](https://tomrichards.net/d
 1. SSH to your Raspberry PI.
 2. Run these commands.
 
-    $ wget https://tomrichards.net/downloads/mausberry-switch_0.4_armhf.deb
-    $ sudo dpkg -i mausberry-switch_0.3_armhf.deb
-    $ sudo service mausberry-switch restart
-    $ sudo insserv mausberry-switch
+```bash
+$ wget https://tomrichards.net/downloads/mausberry-switch_0.4_armhf.deb
+$ sudo dpkg -i mausberry-switch_0.4_armhf.deb
+$ sudo service mausberry-switch restart
+$ sudo insserv mausberry-switch
+```
 
 If you want it on something else, I'll gladly accept a pull request.
