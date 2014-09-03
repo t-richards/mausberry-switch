@@ -1,7 +1,7 @@
 Format: http://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
 Upstream-Name: mausberry-switch
 Upstream-Contact: Tom Richards <tom@tomrichards.net>
-Source: https://git.tomrichards.net/rpi/mausberry
+Source: https://github.com/t-richards/mausberry-switch
 
 Files: *
 Copyright: 2014 Tom Richards

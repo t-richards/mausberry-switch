@@ -1,3 +1,9 @@
+mausberry-switch (0.5) unstable; urgency=low
+
+  * Added configurable delay for shutdown.
+
+ -- Tom Richards <tom@tomrichards.net>  Wed, 03 Sept 2014 17:18:00 -0400
+
 mausberry-switch (0.4) unstable; urgency=low
 
   * Flipped pins and logic.

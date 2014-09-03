@@ -234,7 +234,7 @@ int main(int argc, char *argv[])
 	config_init(&cfg);
 
 	//open config file
-	if(!config_read_file(&cfg, "/etc/mausberry-switch.cfg")) {
+	if(!config_read_file(&cfg, CONFFILE)) {
 		syslog(LOG_ERR, "%s:%d - %s\n", config_error_file(&cfg), config_error_line(&cfg), config_error_text(&cfg));
 		config_destroy(&cfg);
 		exit(EXIT_FAILURE);

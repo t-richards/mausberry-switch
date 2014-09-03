@@ -3,9 +3,9 @@
 
 AC_PREREQ([2.69])
 AC_INIT(mausberry-switch, 0.05, tom@tomrichards.net)
-AM_INIT_AUTOMAKE(mausberry-switch, 2.6)
 AC_CONFIG_SRCDIR([src/switch.c])
 AC_CONFIG_HEADERS([config.h])
+AM_INIT_AUTOMAKE
 
 # Checks for programs.
 AC_PROG_CC
@@ -28,5 +28,6 @@ AC_FUNC_FORK
 AC_CONFIG_FILES([
 Makefile
 src/Makefile
+etc/Makefile
 ])
 AC_OUTPUT
