@@ -1,89 +1,97 @@
 /*
- * switch.c
- * Raspberry Pi GPIO for use with Mausberry switches.
- * Lots of code adapted from http://elinux.org/RPi_Low-level_peripherals
+ * mausberry-switch
+ *
+ * GPIO monitoring daemon for use with Mausberry switches on the Raspberry Pi.
  */
+
+#include "config.h"
+
+#include <glib.h>
+#include <glib/gprintf.h>
+#include <glib/gstdio.h>
 
 #include <errno.h>
 #include <fcntl.h>
-#include <libconfig.h>
 #include <poll.h>
-#include <signal.h>
 #include <stdlib.h>
-#include <sys/stat.h>
-#include <sys/types.h>
-#include <syslog.h>
 #include <unistd.h>
-
-#define IN  0
-#define OUT 1
-
-#define LOW  0
-#define HIGH 1
-
-#define PIN  24
-#define POUT 23
 
 #define BUFSZ 64
 
-void SignalHandler(int sig)
-{
-    syslog(LOG_NOTICE, "Caught signal %d, terminating mausberry-switch daemon.", sig);
-    exit(EXIT_SUCCESS);
-}
+typedef struct {
+    gchar *shutdown_command;
+    gint  shutdown_delay;
+    gint  pin_in;
+    gint  pin_out;
+} MausPrivate;
 
-int GPIOExport(int pin)
+MausPrivate *priv = NULL;
+
+typedef enum {
+    DIRECTION_IN  = 0,
+    DIRECTION_OUT = 1
+} MausGpioDirection;
+
+typedef enum {
+    VALUE_LOW  = 0,
+    VALUE_HIGH = 1
+} MausGpioValue;
+
+
+int maus_gpio_export(gint pin)
 {
-    char buffer[BUFSZ] = {0};
-    size_t to_write;
+    gchar buffer[BUFSZ] = {0};
+    gint format_len;
+    ssize_t write_len;
     int fd;
 
-    fd = open("/sys/class/gpio/export", O_WRONLY);
+    fd = g_open("/sys/class/gpio/export", O_WRONLY);
     if (-1 == fd) {
-        syslog(LOG_WARNING, "Failed to open export for writing: %m\n");
+        g_printf("Failed to open export for writing\n");
         return -1;
     }
 
-    to_write = (size_t)snprintf(buffer, BUFSZ, "%d", pin);
-    write(fd, buffer, to_write);
+    format_len = g_snprintf(buffer, BUFSZ, "%d", pin);
+    write_len = write(fd, buffer, format_len);
     close(fd);
     return 0;
 }
 
-int GPIOUnexport(int pin)
+int maus_gpio_unexport(gint pin)
 {
-    char buffer[BUFSZ] = {0};
-    size_t to_write;
+    gchar buffer[BUFSZ] = {0};
+    gint format_len;
+    ssize_t write_len;
     int fd;
 
-    fd = open("/sys/class/gpio/unexport", O_WRONLY);
+    fd = g_open("/sys/class/gpio/unexport", O_WRONLY);
     if (-1 == fd) {
-        syslog(LOG_WARNING, "Failed to open unexport for writing: %m\n");
+        g_printf("Failed to open unexport for writing\n");
         return -1;
     }
 
-    to_write = (size_t)snprintf(buffer, BUFSZ, "%d", pin);
-    write(fd, buffer, to_write);
+    format_len = g_snprintf(buffer, BUFSZ, "%d", pin);
+    write_len = write(fd, buffer, format_len);
     close(fd);
     return 0;
 }
 
-int GPIODirection(int pin, int dir)
+int maus_gpio_direction(gint pin, gint dir)
 {
     const char s_directions_str[]  = "in\0out";
 
-    char path[BUFSZ] = {0};
+    gchar path[BUFSZ] = {0};
     int fd;
 
-    snprintf(path, BUFSZ, "/sys/class/gpio/gpio%d/direction", pin);
-    fd = open(path, O_WRONLY);
+    g_snprintf(path, BUFSZ, "/sys/class/gpio/gpio%d/direction", pin);
+    fd = g_open(path, O_WRONLY);
     if (-1 == fd) {
-        syslog(LOG_WARNING, "Failed to open gpio direction for writing: %m\n");
+        g_fprintf(stderr, "Failed to open gpio direction for writing\n");
         return -1;
     }
 
-    if (-1 == write(fd, &s_directions_str[IN == dir ? 0 : 3], IN == dir ? 2 : 3)) {
-        syslog(LOG_WARNING, "Failed to set gpio direction: %m\n");
+    if (-1 == write(fd, &s_directions_str[DIRECTION_IN == dir ? 0 : 3], DIRECTION_IN == dir ? 2 : 3)) {
+        g_fprintf(stderr, "Failed to set gpio direction\n");
         return -1;
     }
 
@@ -91,21 +99,21 @@ int GPIODirection(int pin, int dir)
     return 0;
 }
 
-int GPIOInterrupt(int pin)
+int maus_gpio_interrupt(gint pin)
 {
     char path[BUFSZ] = {0};
     const char when_to_return[] = "both";
     int fd;
 
-    snprintf(path, BUFSZ, "/sys/class/gpio/gpio%d/edge", pin);
-    fd = open(path, O_WRONLY);
+    g_snprintf(path, BUFSZ, "/sys/class/gpio/gpio%d/edge", pin);
+    fd = g_open(path, O_WRONLY);
     if (-1 == fd) {
-        syslog(LOG_WARNING, "Failed to open gpio edge for writing: %m\n");
+        g_fprintf(stderr, "Failed to open gpio edge for writing\n");
         return -1;
     }
 
     if (-1 == write(fd, when_to_return, 4)) {
-        syslog(LOG_WARNING, "Failed to configure gpio as interrupt source: %m\n");
+        g_fprintf(stderr, "Failed to configure gpio as interrupt source\n");
         return -1;
     }
 
@@ -113,7 +121,7 @@ int GPIOInterrupt(int pin)
     return 0;
 }
 
-int GPIOWait(int pin)
+int maus_gpio_wait(gint pin)
 {
     int value = -1;
     char path[BUFSZ] = {0};
@@ -121,10 +129,10 @@ int GPIOWait(int pin)
     int fd;
 
     //open gpio file descriptor
-    snprintf(path, BUFSZ, "/sys/class/gpio/gpio%d/value", pin);
-    fd = open(path, O_RDONLY);
+    g_snprintf(path, BUFSZ, "/sys/class/gpio/gpio%d/value", pin);
+    fd = g_open(path, O_RDONLY);
     if (-1 == fd) {
-        syslog(LOG_WARNING, "Failed to open gpio value for reading: %m\n");
+        g_fprintf(stderr, "Failed to open gpio value for reading\n");
         return -1;
     }
 
@@ -139,7 +147,7 @@ int GPIOWait(int pin)
         if(rc < 0) {
             int errsv = errno;
             if(errsv != EAGAIN && errsv != EINTR && errsv != EINVAL) {
-                syslog(LOG_WARNING, "An error occurred while polling the switch: %m\n");
+                g_fprintf(stderr, "An error occurred while polling the switch\n");
                 return -1;
             }
         }
@@ -148,11 +156,11 @@ int GPIOWait(int pin)
             lseek(fd, 0, SEEK_SET);
             //read the value
             if (-1 == read(fd, value_str, BUFSZ)) {
-                syslog(LOG_WARNING, "Failed to read switch value: %m\n");
+                g_fprintf(stderr, "Failed to read switch value\n");
                 return -1;
             }
             value = atoi(value_str);
-            if (value == HIGH) {
+            if (value == VALUE_HIGH) {
                 close(fd);
                 return value;
             }
@@ -160,7 +168,7 @@ int GPIOWait(int pin)
     }
 }
 
-int GPIOWrite(int pin, int value)
+int maus_gpio_write(gint pin, gint value)
 {
     const char s_values_str[] = "01";
 
@@ -168,14 +176,14 @@ int GPIOWrite(int pin, int value)
     int fd;
 
     snprintf(path, BUFSZ, "/sys/class/gpio/gpio%d/value", pin);
-    fd = open(path, O_WRONLY);
+    fd = g_open(path, O_WRONLY);
     if (-1 == fd) {
-        syslog(LOG_WARNING, "Failed to open gpio value for writing: %m\n");
+        g_fprintf(stderr, "Failed to open gpio value for writing\n");
         return -1;
     }
 
-    if (1 != write(fd, &s_values_str[LOW == value ? 0 : 1], 1)) {
-        syslog(LOG_WARNING, "Failed to write value: %m\n");
+    if (1 != write(fd, &s_values_str[VALUE_LOW == value ? 0 : 1], 1)) {
+        g_fprintf(stderr, "Failed to write value\n");
         return -1;
     }
 
@@ -183,113 +191,111 @@ int GPIOWrite(int pin, int value)
     return 0;
 }
 
-int main(int argc, char *argv[])
+gboolean maus_reload_config()
 {
-    //begin most of 15-step daemonize
+    // Initialize config file struct
+    GKeyFile *config_file = g_key_file_new();
 
-    //reset all signal handlers to default
-    int i;
-    for(i = 0; i < _NSIG; i++) {
-        signal(i, SIG_DFL);
+    // Load configuration from file
+    gboolean load_result = g_key_file_load_from_file(
+        config_file,
+        "/etc/mausberry-switch.conf",
+        G_KEY_FILE_NONE,
+        NULL
+    );
+
+    if (!load_result) {
+        g_fprintf(stderr, "Failed to read config file!\n");
+        return FALSE;
     }
 
-    //set up new signal handlers
-    signal(SIGCHLD, SIG_IGN);
-    signal(SIGHUP, SignalHandler);
-    signal(SIGTERM, SignalHandler);
+    // Read keys
+    priv->shutdown_command = g_key_file_get_string(config_file, "Config", "ShutdownCommand", NULL);
+    priv->shutdown_delay = g_key_file_get_integer(config_file, "Config", "Delay", NULL);
+    priv->pin_in = g_key_file_get_integer(config_file, "Pins", "In", NULL);
+    priv->pin_out = g_key_file_get_integer(config_file, "Pins", "Out", NULL);
 
-    pid_t pid, sid;
+    // Print configuration
+    g_printf("== Mausberry Switch Configuration ==\n");
+    g_printf("Shutdown command: '%s'\n", priv->shutdown_command);
+    g_printf("Shutdown delay: %d\n", priv->shutdown_delay);
+    g_printf("Pin IN: %d\n", priv->pin_in);
+    g_printf("Pin OUT: %d\n", priv->pin_out);
+    g_printf("== End Mausberry Switch Configuration ==\n");
 
-    //fork parent process
-    pid = fork();
-    if(pid < 0) {
-        exit(EXIT_FAILURE);
-    }
+    return TRUE;
+}
 
-    if(pid > 0) {
-        exit(EXIT_SUCCESS);
-    }
-
-    //close all file descriptors
-    close(STDIN_FILENO);
-    close(STDOUT_FILENO);
-    close(STDERR_FILENO);
-
-    //change file mode mask
-    umask(0);
-
-    //create unique session id
-    sid = setsid();
-    if(sid < 0) {
-        exit(EXIT_FAILURE);
-    }
-
-    //change working directory
-    if((chdir("/")) < 0) {
-        exit(EXIT_FAILURE);
-    }
-
-    //open syslog
-    openlog("mausberry-switch", LOG_PID, LOG_DAEMON);
-    syslog(LOG_NOTICE, "Mausberry switch daemon started. Config file: %s", CONFFILE);
-
-    //config initialization
-    config_t cfg;
-    int delay = 0;
-    config_init(&cfg);
-
-    //open config file
-    if(config_read_file(&cfg, CONFFILE)) {
-        //read shutdown delay configuration
-        if(config_lookup_int(&cfg, "delay", &delay)) {
-            syslog(LOG_NOTICE, "Mausberry switch shutdown delay: %d seconds", delay);
-        } else {
-            syslog(LOG_ERR, "Mausberry switch 'delay' value not found. Defaulting to 0 seconds.");
-        }
-    } else {
-        syslog(LOG_ERR, "Mausberry switch configuration file error:");
-        syslog(LOG_ERR, "%s:%d - %s\n", config_error_file(&cfg), config_error_line(&cfg), config_error_text(&cfg));
-        syslog(LOG_ERR, "Mausberry switch 'delay' value not found. Defaulting to 0 seconds.");
-    }
-
-    //close config file
-    config_destroy(&cfg);
-
+gboolean maus_setup_gpio()
+{
     // Reset GPIO pins
-    if (-1 == GPIOUnexport(POUT) || -1 == GPIOUnexport(PIN))
-        syslog(LOG_WARNING, "GPIO pins not reset.");
+    if (-1 == maus_gpio_unexport(priv->pin_out) || -1 == maus_gpio_unexport(priv->pin_in))
+        g_fprintf(stderr, "GPIO pins not reset.\n");
 
     // Enable GPIO pins
-    if (-1 == GPIOExport(POUT) || -1 == GPIOExport(PIN))
-        syslog(LOG_WARNING, "GPIO pins not exported.");
+    if (-1 == maus_gpio_export(priv->pin_out) || -1 == maus_gpio_export(priv->pin_in))
+        g_fprintf(stderr, "GPIO pins not exported.\n");
 
     // Set GPIO directions
-    if (-1 == GPIODirection(POUT, IN) || -1 == GPIODirection(PIN, OUT))
-        syslog(LOG_WARNING, "GPIO directions not set.");
+    if (-1 == maus_gpio_direction(priv->pin_out, DIRECTION_IN) || -1 == maus_gpio_direction(priv->pin_in, DIRECTION_OUT))
+        g_fprintf(stderr, "GPIO directions not set.\n");
 
     // Initialize switch state
-    if (-1 == GPIOWrite(PIN, HIGH))
-        syslog(LOG_WARNING, "GPIO not initialized.");
+    if (-1 == maus_gpio_write(priv->pin_in, VALUE_HIGH))
+        g_fprintf(stderr, "GPIO not initialized.\n");
 
     // Register 'out' pin as interrupt source
-    if (-1 == GPIOInterrupt(POUT))
-        syslog(LOG_WARNING, "GPIO not configured as interrupt.");
+    if (-1 == maus_gpio_interrupt(priv->pin_out))
+        g_fprintf(stderr, "GPIO not configured as interrupt.\n");
+
+    return TRUE;
+}
+
+void maus_handle_sighup(int sig)
+{
+    g_printf("Received SIGHUP, reloading configuration.\n");
+    maus_reload_config();
+    maus_setup_gpio();
+}
+
+void maus_handle_termint(int sig)
+{
+    g_fprintf(stderr, "Received SIGTERM or SIGINT, exiting.\n");
+    exit(EXIT_SUCCESS);
+}
+
+int main(int argc, char *argv[])
+{
+    int shutdown_success = 0;
+    priv = g_new0(MausPrivate, 1);
+
+    // Set up signal handlers
+    signal(SIGHUP, maus_handle_sighup);
+    signal(SIGINT, maus_handle_termint);
+    signal(SIGTERM, maus_handle_termint);
+
+    // Parse config
+    maus_reload_config();
+
+    // Set up pins
+    maus_setup_gpio();
 
     // Wait for switch state to change
-    int result = GPIOWait(POUT);
-    syslog(LOG_NOTICE, "Received a %d from gpiowait!\n", result);
+    int result = maus_gpio_wait(priv->pin_out);
+    g_printf("Power switch pressed! (received a %d)!\n", result);
 
     // Disable GPIO pins
-    if (-1 == GPIOUnexport(POUT) || -1 == GPIOUnexport(PIN))
-        syslog(LOG_WARNING, "Could not unexport gpio pins before shutting down.");
+    if (-1 == maus_gpio_unexport(priv->pin_out) || -1 == maus_gpio_unexport(priv->pin_in))
+        g_fprintf(stderr, "Could not unexport gpio pins before shutting down.\n");
 
     // Delay
-    syslog(LOG_NOTICE, "Waiting %d seconds before shutting down.", delay);
-    sleep(delay);
+    g_printf("Waiting %d seconds before shutting down.\n", priv->shutdown_delay);
+    sleep(priv->shutdown_delay);
 
     // Shutdown
-    syslog(LOG_NOTICE, "Shutting down.");
-    system("shutdown -h now");
+    g_printf("Shutting down.\n");
+    // TODO(tom): Actually run the shutdown command!
+    //shutdown_success = system(priv->shutdown_command);
 
-    return 0;
+    return shutdown_success;
 }
