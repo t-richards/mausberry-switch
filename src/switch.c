@@ -294,8 +294,7 @@ int main(int argc, char *argv[])
 
     // Shutdown
     g_printf("Shutting down.\n");
-    // TODO(tom): Actually run the shutdown command!
-    //shutdown_success = system(priv->shutdown_command);
+    shutdown_success = system(priv->shutdown_command);
 
     return shutdown_success;
 }
