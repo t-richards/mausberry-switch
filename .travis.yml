@@ -1,0 +1,19 @@
+sudo: false
+language: c
+compiler:
+  - clang
+  - gcc
+env:
+  global:
+    - CFLAGS="-march=x86-64 -mtune=generic -O2 -pipe -fstack-protector-strong"
+    - CPPFLAGS="-D_FORTIFY_SOURCE=2"
+    - LDFLAGS="-Wl,-O1,--sort-common,--as-needed,-z,relro"
+addons:
+  apt:
+    packages:
+      - build-essential
+      - libglib2.0-dev
+install:
+  - autoreconf -i
+script:
+  - ./configure && make
