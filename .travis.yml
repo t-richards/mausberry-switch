@@ -17,3 +17,5 @@ install:
   - autoreconf -i
 script:
   - ./configure && make
+after_failure:
+  - cat config.log
