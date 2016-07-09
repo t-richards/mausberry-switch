@@ -289,8 +289,10 @@ int main(int argc, char *argv[])
         g_fprintf(stderr, "Could not unexport gpio pins before shutting down.\n");
 
     // Delay
-    g_printf("Waiting %d seconds before shutting down.\n", priv->shutdown_delay);
-    sleep(priv->shutdown_delay);
+    if (priv->shutdown_delay > 0) {
+        g_printf("Waiting %d seconds before shutting down.\n", priv->shutdown_delay);
+        sleep(priv->shutdown_delay);
+    }
 
     // Shutdown
     g_printf("Shutting down.\n");

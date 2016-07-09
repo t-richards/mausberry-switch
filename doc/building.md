@@ -13,7 +13,7 @@ Debian 8 "Jessie" only. Other distributions are not officially supported.
 
 ```bash
 # Install compiler and dependencies
-$ sudo apt-get install build-essential libglib2.0-dev
+$ sudo apt-get install build-essential dh-autoreconf libglib2.0-dev
 
 # Generate configure script
 $ autoreconf -i
@@ -29,7 +29,7 @@ $ make
 
 ```bash
 # Install compiler, packaging tools, and dependencies
-$ sudo apt-get install build-essential fakeroot devscripts git-buildpackage libglib2.0-dev
+$ sudo apt-get install build-essential dh-autoreconf fakeroot devscripts git-buildpackage libglib2.0-dev
 
 # Build the package
 $ git-buildpackage
