@@ -199,7 +199,7 @@ gboolean maus_reload_config()
     // Load configuration from file
     gboolean load_result = g_key_file_load_from_file(
         config_file,
-        "/etc/mausberry-switch.conf",
+        SYSCONFDIR "/mausberry-switch.conf",
         G_KEY_FILE_NONE,
         NULL
     );
@@ -275,7 +275,10 @@ int main(int argc, char *argv[])
     signal(SIGTERM, maus_handle_termint);
 
     // Parse config
-    maus_reload_config();
+    if(!maus_reload_config()) {
+        g_fprintf(stderr, "Critical: exiting.\n");
+        exit(EXIT_FAILURE);
+    }
 
     // Set up pins
     maus_setup_gpio();

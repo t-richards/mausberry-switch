@@ -1,4 +1,5 @@
 AM_CPPFLAGS = \
+	-DSYSCONFDIR=\"$(sysconfdir)\" \
 	$(GLIB_CFLAGS)
 
 bin_PROGRAMS = \

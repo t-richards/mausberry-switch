@@ -22,6 +22,7 @@ AC_TYPE_SSIZE_T
 
 AC_CONFIG_FILES([
 Makefile
+data/Makefile
 src/Makefile
 ])
 AC_OUTPUT
