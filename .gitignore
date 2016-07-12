@@ -1,6 +1,9 @@
 # Binaries
 mausberry-switch
 
+# Packages
+*.deb
+
 # Autotools
 .deps
 .libs

@@ -23,16 +23,22 @@ $ ./configure
 
 # Compile the program
 $ make
+
+# Install the program on your machine
+$ sudo make install
 ```
 
 # Building a Debian package
 
 ```bash
-# Install compiler, packaging tools, and dependencies
-$ sudo apt-get install build-essential dh-autoreconf fakeroot devscripts git-buildpackage libglib2.0-dev
+# Install Ruby
+$ sudo apt-get install ruby ruby-dev
+
+# Install packaging tools
+$ gem install fpm
 
 # Build the package
-$ git-buildpackage
+$ ./script/fpm-deb.sh
 ```
 
 # Recommended reading

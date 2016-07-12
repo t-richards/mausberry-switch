@@ -23,8 +23,9 @@ I do have to give credit for strong adherence to the KISS principle -  21 lines
 of bash is hard to beat.
 
 However, on a Raspberry PI device, we're dealing with a processor that is a
-close relative to a piece of tinfoil. Just think about all the [poor, wasted
-clock cycles]() that occur while polling the GPIO state repeatedly.
+close relative to a piece of tinfoil. Just think about all the
+[poor, wasted clock cycles][wasted-clock] that occur while polling the GPIO
+state repeatedly.
 
 ## Alright, what about one of those Python scripts?
 
@@ -58,10 +59,12 @@ Here's the output of `top` showing the CPU and RAM usage of this program:
 
 ## Alright, I'm convinced. How do I install this thing?
 
-TODO(tom): Re-write this section
+Please see [doc/building.md][build-doc] for instructions on compiling and
+installing this package.
 
-[rpi]: http://www.raspberrypi.org/
+[build-doc]: doc/building.md
+[gpio-sysfs]: https://www.kernel.org/doc/Documentation/gpio/sysfs.txt
 [mausberry-circuits]: http://mausberrycircuits.com/
 [mausberry-script]: http://files.mausberrycircuits.com/setup.sh
+[rpi]: http://www.raspberrypi.org/
 [wasted-clock]: http://www.raspberrypi.org/phpBB3/viewtopic.php?t=63561
-[gpio-sysfs]: https://www.kernel.org/doc/Documentation/gpio/sysfs.txt

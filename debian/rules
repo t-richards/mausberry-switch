@@ -1,6 +1,0 @@
-#!/usr/bin/make -f
-
-DEB_CONFIGURE_EXTRA_FLAGS=--sysconfdir=/etc
-
-%:
-	dh $@
