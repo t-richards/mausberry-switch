@@ -3,7 +3,7 @@ set -ex
 
 mkdir -p /tmp/installdir
 
-autoreconf -i
+autoreconf -i -f
 ./configure --prefix=/usr --sysconfdir=/etc
 make
 make DESTDIR=/tmp/installdir

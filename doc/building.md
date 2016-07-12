@@ -1,6 +1,6 @@
 # Building & packaging from source
 
-This guide covers compiliation and package assembly for Debian 7 "Wheezy", and
+This guide covers compilation and package assembly for Debian 7 "Wheezy", and
 Debian 8 "Jessie" only. Other distributions are not officially supported.
 
 # Requirements
@@ -9,6 +9,11 @@ Debian 8 "Jessie" only. Other distributions are not officially supported.
  - C compiler
  - [GLib][glib] development/runtime libraries
 
+# Before you begin
+
+The following commands are intended to be run directly in your Raspberry Pi
+"Raspbian" system. Cross-compile at your own risk.
+
 # Building from source, no packaging
 
 ```bash
@@ -16,7 +21,7 @@ Debian 8 "Jessie" only. Other distributions are not officially supported.
 $ sudo apt-get install build-essential dh-autoreconf libglib2.0-dev
 
 # Generate configure script
-$ autoreconf -i
+$ autoreconf -i -f
 
 # Configure the program
 $ ./configure
@@ -41,10 +46,5 @@ $ gem install fpm
 $ ./script/fpm-deb.sh
 ```
 
-# Recommended reading
-
-Debian Wiki [BuildingTutorial][debwiki-building-tutorial] article.
-
 [autotools]: https://en.wikipedia.org/wiki/GNU_Build_System
-[debwiki-building-tutorial]: https://wiki.debian.org/BuildingTutorial
 [glib]: https://en.wikipedia.org/wiki/GLib
