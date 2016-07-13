@@ -3,17 +3,20 @@ language: c
 compiler:
   - clang
   - gcc
-env:
-  global:
-    - CFLAGS="-march=x86-64 -mtune=generic -O2 -pipe -fstack-protector"
-    - CPPFLAGS="-D_FORTIFY_SOURCE=2"
-    - LDFLAGS="-Wl,-O1,--sort-common,--as-needed,-z,relro"
 addons:
   apt:
     packages:
       - build-essential
+      - dh-autoreconf
+      - hardening-wrapper
       - libglib2.0-dev
+      - ruby
+      - ruby-dev
 install:
+  - gem install fpm
   - autoreconf -i
+script:
+  - ./script/build.sh
 after_failure:
   - cat config.log
+  - cat test/*.log

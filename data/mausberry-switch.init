@@ -12,7 +12,7 @@
 # Author: Tom Richards <tom@tomrichards.net>
 # PATH should only include /usr/* if it runs after the mountnfs.sh script
 PATH=/sbin:/usr/sbin:/bin:/usr/bin
-DESC="Mausberry PI Switch"
+DESC="Mausberry Switch"
 NAME=mausberry-switch
 DAEMON=/usr/bin/mausberry-switch
 DAEMON_ARGS=""

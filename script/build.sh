@@ -6,9 +6,11 @@ mkdir -p /tmp/installdir
 autoreconf -i -f
 ./configure --prefix=/usr --sysconfdir=/etc
 make
-make DESTDIR=/tmp/installdir
+make check
+make DESTDIR=/tmp/installdir install-strip
 
 fpm \
+	-f \
 	-s dir \
 	-t deb \
 	-n mausberry-switch \

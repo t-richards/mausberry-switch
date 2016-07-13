@@ -2,7 +2,7 @@
 
 [![Build Status](https://travis-ci.org/t-richards/mausberry-switch.svg?branch=master)](https://travis-ci.org/t-richards/mausberry-switch)
 
-This is a daemon for [Raspberry PI][rpi] devices that monitors GPIO pins 23 and
+This is a daemon for [Raspberry Pi][rpi] devices that monitors GPIO pins 23 and
 24, waiting for a low signal from a [Mausberry Circuits switch][mausberry-circuits]
 in order to poweroff the system safely. It is intended to replace the
 [official setup script][mausberry-script].

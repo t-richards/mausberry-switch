@@ -12,6 +12,7 @@ mausberry-switch
 *.lo
 *.o
 *.swp
+*.trs
 *~
 aclocal.m4
 autom4te.cache
@@ -32,3 +33,4 @@ po/.intltool-merge-cache
 po/*.gmo
 POTFILES
 stamp-*
+test-driver
