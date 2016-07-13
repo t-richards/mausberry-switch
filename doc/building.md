@@ -20,7 +20,7 @@ directory where you cloned this repository:
 
 ```bash
 # Install compiler and dependencies
-$ sudo apt-get install build-essential dh-autoreconf libglib2.0-dev ruby
+$ sudo apt-get install build-essential check dh-autoreconf libglib2.0-dev ruby
 
 # Generate configure script
 $ autoreconf -i -f

@@ -1,3 +1,5 @@
-TESTS = test1.rb
-LOG_COMPILER = ruby
-AM_LOG_FLAGS = -w
+TESTS = check_maus
+check_PROGRAMS = check_maus
+check_maus_SOURCES = check_maus.c
+check_maus_CFLAGS = @CHECK_CFLAGS@
+check_maus_LDADD = @CHECK_LIBS@
