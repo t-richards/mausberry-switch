@@ -7,6 +7,7 @@ addons:
   apt:
     packages:
       - build-essential
+      - check
       - dh-autoreconf
       - hardening-wrapper
       - libglib2.0-dev
