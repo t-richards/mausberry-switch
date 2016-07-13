@@ -1,4 +1,3 @@
 TESTS = test1.rb
-TEST_EXTENSIONS = .rb
-RB_LOG_COMPILER = ruby
-AM_RB_LOG_FLAGS = -w
+LOG_COMPILER = ruby
+AM_LOG_FLAGS = -w

@@ -1,3 +1,4 @@
+#!/usr/bin/env ruby
 require_relative 'test_helper'
 
 class Test1 < Minitest::Test
