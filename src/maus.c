@@ -3,8 +3,7 @@
  *
  * GPIO monitoring daemon for use with Mausberry switches on the Raspberry Pi.
  */
-
-#include "config.h"
+#include "maus.h"
 
 #include <glib.h>
 #include <glib/gprintf.h>
@@ -17,26 +16,6 @@
 #include <unistd.h>
 
 #define BUFSZ 64
-
-typedef struct {
-    gchar *shutdown_command;
-    gint  shutdown_delay;
-    gint  pin_in;
-    gint  pin_out;
-} MausPrivate;
-
-MausPrivate *priv = NULL;
-
-typedef enum {
-    DIRECTION_IN  = 0,
-    DIRECTION_OUT = 1
-} MausGpioDirection;
-
-typedef enum {
-    VALUE_LOW  = 0,
-    VALUE_HIGH = 1
-} MausGpioValue;
-
 
 int maus_gpio_export(gint pin)
 {
@@ -191,7 +170,7 @@ int maus_gpio_write(gint pin, gint value)
     return 0;
 }
 
-gboolean maus_reload_config()
+gboolean maus_reload_config(MausPrivate *priv)
 {
     // Initialize config file struct
     GKeyFile *config_file = g_key_file_new();
@@ -226,7 +205,7 @@ gboolean maus_reload_config()
     return TRUE;
 }
 
-gboolean maus_setup_gpio()
+gboolean maus_setup_gpio(MausPrivate *priv)
 {
     // Reset GPIO pins
     if (-1 == maus_gpio_unexport(priv->pin_out) || -1 == maus_gpio_unexport(priv->pin_in))
@@ -249,57 +228,4 @@ gboolean maus_setup_gpio()
         g_fprintf(stderr, "GPIO not configured as interrupt.\n");
 
     return TRUE;
-}
-
-void maus_handle_sighup(int sig)
-{
-    g_printf("Received SIGHUP, reloading configuration.\n");
-    maus_reload_config();
-    maus_setup_gpio();
-}
-
-void maus_handle_termint(int sig)
-{
-    g_fprintf(stderr, "Received SIGTERM or SIGINT, exiting.\n");
-    exit(EXIT_SUCCESS);
-}
-
-int main(int argc, char *argv[])
-{
-    int shutdown_success = 0;
-    priv = g_new0(MausPrivate, 1);
-
-    // Set up signal handlers
-    signal(SIGHUP, maus_handle_sighup);
-    signal(SIGINT, maus_handle_termint);
-    signal(SIGTERM, maus_handle_termint);
-
-    // Parse config
-    if(!maus_reload_config()) {
-        g_fprintf(stderr, "Critical: exiting.\n");
-        exit(EXIT_FAILURE);
-    }
-
-    // Set up pins
-    maus_setup_gpio();
-
-    // Wait for switch state to change
-    int result = maus_gpio_wait(priv->pin_out);
-    g_printf("Power switch pressed! (received a %d)!\n", result);
-
-    // Disable GPIO pins
-    if (-1 == maus_gpio_unexport(priv->pin_out) || -1 == maus_gpio_unexport(priv->pin_in))
-        g_fprintf(stderr, "Could not unexport gpio pins before shutting down.\n");
-
-    // Delay
-    if (priv->shutdown_delay > 0) {
-        g_printf("Waiting %d seconds before shutting down.\n", priv->shutdown_delay);
-        sleep(priv->shutdown_delay);
-    }
-
-    // Shutdown
-    g_printf("Shutting down.\n");
-    shutdown_success = system(priv->shutdown_command);
-
-    return shutdown_success;
 }

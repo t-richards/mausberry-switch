@@ -16,6 +16,7 @@ check_maus
 *.trs
 *~
 aclocal.m4
+ar-lib
 autom4te.cache
 compile
 config.*

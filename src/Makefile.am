@@ -6,7 +6,14 @@ bin_PROGRAMS = \
 	mausberry-switch
 
 mausberry_switch_LDADD = \
+	libmaus.a \
 	$(GLIB_LIBS)
 
 mausberry_switch_SOURCES = \
-	switch.c
+	main.c
+
+noinst_LIBRARIES = \
+	libmaus.a
+
+libmaus_a_SOURCES = \
+	maus.c
