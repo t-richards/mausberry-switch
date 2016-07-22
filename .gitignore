@@ -8,6 +8,7 @@ check_maus
 # Autotools
 .deps
 .libs
+*.a
 *.bz2
 *.la
 *.lo
