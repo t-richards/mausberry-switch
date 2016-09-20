@@ -14,7 +14,6 @@ AC_PROG_INSTALL
 
 # Libraries
 PKG_CHECK_MODULES(GLIB, glib-2.0)
-PKG_CHECK_MODULES(CHECK, check)
 
 # Headers
 AC_CHECK_HEADERS([errno.h fcntl.h poll.h stdlib.h unistd.h])

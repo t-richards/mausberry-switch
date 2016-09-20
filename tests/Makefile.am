@@ -1,5 +1,6 @@
-TESTS = check_maus
-check_PROGRAMS = check_maus
-check_maus_SOURCES = check_maus.c
-check_maus_CFLAGS = @CHECK_CFLAGS@
-check_maus_LDADD = @CHECK_LIBS@
+TESTS = test_maus
+test_maus_SOURCES = test_maus.c
+test_maus_CFLAGS = $(GLIB_CFLAGS)
+test_maus_LDADD = $(GLIB_LIBS)
+
+check_PROGRAMS = $(TESTS)
