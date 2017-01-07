@@ -45,10 +45,6 @@ int main(int argc, char *argv[])
     int result = maus_gpio_wait(priv->pin_out);
     g_printf("Power switch pressed! (received a %d)!\n", result);
 
-    // Disable GPIO pins
-    if (-1 == maus_gpio_unexport(priv->pin_out) || -1 == maus_gpio_unexport(priv->pin_in))
-        g_fprintf(stderr, "Could not unexport gpio pins before shutting down.\n");
-
     // Delay
     if (priv->shutdown_delay > 0) {
         g_printf("Waiting %d seconds before shutting down.\n", priv->shutdown_delay);
