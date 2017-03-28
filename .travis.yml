@@ -14,7 +14,6 @@ addons:
       - ruby-dev
 install:
   - gem install fpm
-  - autoreconf -i
 script:
   - ./script/build.sh
 after_failure:

@@ -20,7 +20,7 @@ directory where you cloned this repository:
 
 ```bash
 # Install compiler and dependencies
-$ sudo apt-get install build-essential dh-autoreconf libglib2.0-dev ruby
+$ sudo apt-get install build-essential dh-autoreconf libglib2.0-dev
 
 # Generate configure script
 $ autoreconf -i -f
@@ -39,7 +39,7 @@ $ make install
 
 ```bash
 # Install all the things above, then
-$ sudo apt-get install ruby-dev
+$ sudo apt-get install ruby ruby-dev rubygems
 
 # Install packaging tools
 $ gem install fpm
