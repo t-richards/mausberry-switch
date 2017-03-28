@@ -1,6 +1,6 @@
 # Binaries
 mausberry-switch
-check_maus
+test_maus
 
 # Packages
 *.deb
