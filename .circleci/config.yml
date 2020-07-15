@@ -60,6 +60,5 @@ jobs:
       - run:
           name: Inspect package contents
           command: |
-            cd /tmp/installdir
             ar x mausberry-switch_*.deb
             tar tvf data.tar.gz
