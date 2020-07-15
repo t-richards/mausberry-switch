@@ -4,7 +4,13 @@ jobs:
     docker:
       - image: debian:buster
         environment:
+          CC: /usr/bin/arm-linux-gnueabihf-gcc
+          LD: /usr/bin/arm-linux-gnueabihf-ld
+          CFLAGS: -O2 -pipe -fstack-protector-strong -fno-plt
+          CPPFLAGS: -D_FORTIFY_SOURCE=2
           DEBIAN_FRONTEND: noninteractive
+          LDFLAGS: -Wl,-O1,--sort-common,--as-needed,-z,relro
+
     steps:
       - checkout
 
@@ -12,7 +18,7 @@ jobs:
           name: Install dependencies
           command: |
             apt-get update -q
-            apt-get install -qy build-essential dh-autoreconf libglib2.0-dev ruby ruby-dev
+            apt-get install -qy crossbuild-essential-armhf dh-autoreconf libglib2.0-dev ruby ruby-dev
 
       - run:
           name: Create install directory
@@ -33,10 +39,6 @@ jobs:
       - run:
           name: Make
           command: make
-
-      - run:
-          name: Test
-          command: make check
 
       - run:
           name: Make install
