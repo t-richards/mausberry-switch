@@ -1,0 +1,64 @@
+version: 2.1
+jobs:
+  build:
+    docker:
+      - image: debian:buster
+        environment:
+          DEBIAN_FRONTEND: noninteractive
+    steps:
+      - checkout
+
+      - run:
+          name: Install dependencies
+          command: |
+            apt-get update -q
+            apt-get install -qy build-essential dh-autoreconf libglib2.0-dev ruby ruby-dev
+
+      - run:
+          name: Create install directory
+          command: mkdir -p /tmp/installdir
+
+      - run:
+          name: Install fpm
+          command: gem install --no-document fpm
+
+      - run:
+          name: Autoreconf
+          command: autoreconf -i -f
+
+      - run:
+          name: Configure
+          command: ./configure --prefix=/usr --sysconfdir=/etc
+
+      - run:
+          name: Make
+          command: make
+
+      - run:
+          name: Test
+          command: make check
+
+      - run:
+          name: Make install
+          command: make DESTDIR=/tmp/installdir install-strip
+
+      - run:
+          name: Build debian package
+          command: |
+            fpm \
+              -f \
+              -s dir \
+              -t deb \
+              -n mausberry-switch \
+              -v 0.8 \
+              -C /tmp/installdir \
+              -p mausberry-switch_VERSION_ARCH.deb \
+              -d "libglib2.0-0 >= 2.42" \
+              --deb-systemd data/mausberry-switch.service \
+              usr/bin etc
+
+      - run:
+          name: Inspect package contents
+          command: |
+            ar x mausberry-switch_*.deb
+            tar tvf data.tar.gz

@@ -1,7 +1,8 @@
 # Building & packaging from source
 
-This guide covers compilation and package assembly for Debian 7 "Wheezy", and
-Debian 8 "Jessie" only. Other distributions are not officially supported.
+This guide covers compilation and package assembly for Raspberry Pi OS ("Raspbian") based on Debian 10 (Buster).
+
+Other distributions are not officially supported.
 
 # Requirements
 
@@ -12,42 +13,27 @@ Debian 8 "Jessie" only. Other distributions are not officially supported.
 
 # Before you begin
 
-The following commands are intended to be run directly in your Raspberry Pi
-"Raspbian" system. Cross-compile at your own risk. Assuming you're in the
-directory where you cloned this repository:
+The following commands are intended to be run directly on your Raspberry Pi system.
 
-# Building from source, no packaging
+Cross-compile at your own risk.
+
+# Building and installing a debian package
 
 ```bash
 # Install compiler and dependencies
-$ sudo apt-get install build-essential dh-autoreconf libglib2.0-dev
-
-# Generate configure script
-$ autoreconf -i -f
-
-# Configure the program
-$ ./configure
-
-# Compile the program
-$ make
-
-# Install the program on your machine (but seriously, don't actually do this please)
-$ make install
-```
-
-# Building a Debian package
-
-```bash
-# Install all the things above, then
-$ sudo apt-get install ruby ruby-dev rubygems
+$ sudo apt-get install build-essential dh-autoreconf git libglib2.0-dev ruby ruby-dev
 
 # Install packaging tools
-$ gem install fpm
+$ sudo gem install --no-document fpm
+
+# Clone repository
+$ git clone https://github.com/t-richards/mausberry-switch.git
+$ cd mausberry-switch
 
 # Build the package
 $ ./script/build.sh
 
-# Install the package, fix deps if necessary
+# Install the package
 $ sudo dpkg -i mausberry-switch*.deb
 $ sudo apt-get -f install
 ```
