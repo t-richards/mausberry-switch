@@ -15,16 +15,20 @@ Other distributions are not officially supported.
 
 The following commands are intended to be run directly on your Raspberry Pi system.
 
-Cross-compile at your own risk. Assuming you're in the directory where you cloned this repository:
+Cross-compile at your own risk.
 
 # Building and installing a debian package
 
 ```bash
 # Install compiler and dependencies
-$ sudo apt-get install build-essential dh-autoreconf libglib2.0-dev ruby ruby-dev
+$ sudo apt-get install build-essential dh-autoreconf git libglib2.0-dev ruby ruby-dev
 
 # Install packaging tools
 $ sudo gem install --no-document fpm
+
+# Clone repository
+$ git clone https://github.com/t-richards/mausberry-switch.git
+$ cd mausberry-switch
 
 # Build the package
 $ ./script/build.sh

@@ -35,7 +35,7 @@ jobs:
           command: make
 
       - run:
-          name: Tests
+          name: Test
           command: make check
 
       - run:
