@@ -40,3 +40,6 @@ po/*.gmo
 POTFILES
 stamp-*
 test-driver
+
+# CI
+!.circleci/config.yml
