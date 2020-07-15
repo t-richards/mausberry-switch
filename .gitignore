@@ -2,6 +2,9 @@
 mausberry-switch
 test_maus
 
+# Test logs
+*.log
+
 # Packages
 *.deb
 
