@@ -3,12 +3,16 @@ jobs:
   build:
     docker:
       - image: debian:buster
+        environment:
+          DEBIAN_FRONTEND: noninteractive
     steps:
       - checkout
 
       - run:
           name: Install dependencies
-          command: apt-get install build-essential dh-autoreconf libglib2.0-dev ruby ruby-dev
+          command: |
+            apt-get update -q
+            apt-get install -qy build-essential dh-autoreconf libglib2.0-dev ruby ruby-dev
 
       - run:
           name: Create install directory
