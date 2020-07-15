@@ -17,6 +17,6 @@ fpm \
 	-v 0.7 \
 	-C /tmp/installdir \
 	-p mausberry-switch_VERSION_ARCH.deb \
-	-d "libglib2.0-0 >= 2.3" \
+	-d "libglib2.0-0 >= 2.42" \
 	--deb-systemd data/mausberry-switch.service \
 	usr/bin etc
