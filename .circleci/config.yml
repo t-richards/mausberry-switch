@@ -2,7 +2,7 @@ version: 2.1
 jobs:
   build:
     docker:
-      - image: debian:buster
+      - image: debian:buster-slim
         environment:
           CFLAGS: -O2 -pipe -fstack-protector-strong -fno-plt
           CPPFLAGS: -D_FORTIFY_SOURCE=2
@@ -67,4 +67,4 @@ jobs:
             tar tvf data.tar.gz
 
       - store_artifacts:
-          path: mausberry-switch_*.deb
+          path: mausberry-switch_0.8_armhf.deb
