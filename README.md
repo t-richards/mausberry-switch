@@ -59,12 +59,23 @@ Here's the output of `top` showing the CPU and RAM usage of this program:
 
 ## Alright, I'm convinced. How do I install this thing?
 
-Please see [doc/building.md][build-doc] for instructions on compiling and
-installing this package.
+Fetch and install the package directly on your Pi:
+
+```bash
+# Download the package
+wget https://github.com/t-richards/mausberry-switch/releases/download/0.8/mausberry-switch_0.8_armhf.deb
+
+# Install the package
+sudo dpkg -i mausberry-switch*.deb
+sudo apt-get -f install
+```
+
+Please also see the [releases][releases] section on GitHub.
 
 [build-doc]: doc/building.md
 [gpio-sysfs]: https://www.kernel.org/doc/Documentation/gpio/sysfs.txt
 [mausberry-circuits]: http://mausberrycircuits.com/
 [mausberry-script]: http://files.mausberrycircuits.com/setup.sh
+[releases]: https://github.com/t-richards/mausberry-switch/releases
 [rpi]: http://www.raspberrypi.org/
 [wasted-clock]: http://www.raspberrypi.org/phpBB3/viewtopic.php?t=63561
