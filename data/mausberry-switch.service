@@ -4,6 +4,7 @@ After=syslog.target
 
 [Service]
 ExecStart=/usr/bin/mausberry-switch
+ExecReload=/bin/kill -HUP $MAINPID
 
 [Install]
 WantedBy=multi-user.target
