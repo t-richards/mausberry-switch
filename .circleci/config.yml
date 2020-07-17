@@ -2,17 +2,24 @@ version: 2.1
 jobs:
   build:
     docker:
-      - image: debian:buster
+      - image: debian:buster-slim
         environment:
+          CFLAGS: -O2 -pipe -fstack-protector-strong -fno-plt
+          CPPFLAGS: -D_FORTIFY_SOURCE=2
           DEBIAN_FRONTEND: noninteractive
+          LDFLAGS: -Wl,-O1,--sort-common,--as-needed,-z,relro
+          PKG_CONFIG_ALLOW_CROSS: 1
+          PKG_CONFIG_PATH: /usr/lib/arm-linux-gnueabihf/pkgconfig/
+
     steps:
       - checkout
 
       - run:
           name: Install dependencies
           command: |
+            dpkg --add-architecture armhf
             apt-get update -q
-            apt-get install -qy build-essential dh-autoreconf libglib2.0-dev ruby ruby-dev
+            apt-get install -qy crossbuild-essential-armhf dh-autoreconf libglib2.0-dev:armhf ruby ruby-dev
 
       - run:
           name: Create install directory
@@ -28,15 +35,11 @@ jobs:
 
       - run:
           name: Configure
-          command: ./configure --prefix=/usr --sysconfdir=/etc
+          command: ./configure --prefix=/usr --sysconfdir=/etc --build=x86_64-linux-gnu --host=arm-linux-gnueabihf
 
       - run:
           name: Make
           command: make
-
-      - run:
-          name: Test
-          command: make check
 
       - run:
           name: Make install
@@ -49,6 +52,7 @@ jobs:
               -f \
               -s dir \
               -t deb \
+              -a armhf \
               -n mausberry-switch \
               -v 0.8 \
               -C /tmp/installdir \
@@ -62,3 +66,6 @@ jobs:
           command: |
             ar x mausberry-switch_*.deb
             tar tvf data.tar.gz
+
+      - store_artifacts:
+          path: mausberry-switch_0.8_armhf.deb

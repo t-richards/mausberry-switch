@@ -1,6 +1,6 @@
 # mausberry-switch
 
-[![Build Status](https://travis-ci.org/t-richards/mausberry-switch.svg?branch=master)](https://travis-ci.org/t-richards/mausberry-switch)
+[![CircleCI](https://circleci.com/gh/t-richards/mausberry-switch.svg?style=shield)](https://circleci.com/gh/t-richards/mausberry-switch)
 
 This is a daemon for [Raspberry Pi][rpi] devices that monitors GPIO pins 23 and
 24, waiting for a low signal from a [Mausberry Circuits switch][mausberry-circuits]
@@ -59,12 +59,53 @@ Here's the output of `top` showing the CPU and RAM usage of this program:
 
 ## Alright, I'm convinced. How do I install this thing?
 
-Please see [doc/building.md][build-doc] for instructions on compiling and
-installing this package.
+Fetch and install the package directly on your Pi:
+
+```bash
+# Download the package
+wget https://github.com/t-richards/mausberry-switch/releases/download/0.8/mausberry-switch_0.8_armhf.deb
+
+# Install the package
+sudo dpkg -i mausberry-switch*.deb
+sudo apt-get -f install
+```
+
+Please also see the [releases][releases] section on GitHub.
+
+## Usage
+
+The `mausberry-switch` service will be automatically enabled and started when you install the package.
+
+To stop or disable the service, the appropriate `systemctl` command should be used. For example:
+
+```bash
+# Stop the service temporarily
+sudo systemctl stop mausberry-switch
+
+# Disable the service from automatically starting at boot
+sudo systemctl disable mausberry-switch
+```
+
+Configuration options (such as input/output pins, shutdown command/delay) are available in the primary configuration file, `/etc/mausberry-switch.conf`.
+
+After changing this file, some values may be hot-reloaded:
+
+```bash
+sudo systemctl reload mausberry-switch
+```
+
+While others may require a full service restart:
+
+```bash
+sudo systemctl restart mausberry-switch
+```
+
+Please see the configuration file for documentation on each supported option.
 
 [build-doc]: doc/building.md
 [gpio-sysfs]: https://www.kernel.org/doc/Documentation/gpio/sysfs.txt
 [mausberry-circuits]: http://mausberrycircuits.com/
 [mausberry-script]: http://files.mausberrycircuits.com/setup.sh
+[releases]: https://github.com/t-richards/mausberry-switch/releases
 [rpi]: http://www.raspberrypi.org/
 [wasted-clock]: http://www.raspberrypi.org/phpBB3/viewtopic.php?t=63561
