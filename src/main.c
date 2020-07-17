@@ -15,9 +15,8 @@ gboolean maus_handle_sighup(gpointer user_data)
     return G_SOURCE_CONTINUE;
 }
 
-gboolean maus_handle_termint(gpointer user_data)
+gboolean maus_handle_termint(gpointer _unused)
 {
-    MausPrivate *priv = (MausPrivate*) user_data;
     g_fprintf(stderr, "Received SIGTERM or SIGINT, exiting.\n");
     exit(EXIT_SUCCESS);
 }
@@ -29,8 +28,8 @@ int main(int argc, char *argv[])
 
     // Set up signal handlers
     g_unix_signal_add(SIGHUP, (GSourceFunc) maus_handle_sighup, priv);
-    g_unix_signal_add(SIGINT, (GSourceFunc) maus_handle_termint, priv);
-    g_unix_signal_add(SIGINT, (GSourceFunc) maus_handle_termint, priv);
+    g_unix_signal_add(SIGINT, (GSourceFunc) maus_handle_termint, NULL);
+    g_unix_signal_add(SIGTERM, (GSourceFunc) maus_handle_termint, NULL);
 
     // Parse config
     if(!maus_reload_config(priv)) {
