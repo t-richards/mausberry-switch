@@ -2,7 +2,7 @@ version: 2.1
 jobs:
   build:
     docker:
-      - image: circleci/buildpack-deps:buster
+      - image: debian:buster
         environment:
           CFLAGS: -O2 -pipe -fstack-protector-strong -fno-plt
           CPPFLAGS: -D_FORTIFY_SOURCE=2
@@ -72,7 +72,7 @@ jobs:
 
   test:
     docker:
-      - image: circleci/buildpack-deps:buster
+      - image: debian:buster
         environment:
           CFLAGS: -O2 -pipe -fstack-protector-strong -fno-plt
           CPPFLAGS: -D_FORTIFY_SOURCE=2
