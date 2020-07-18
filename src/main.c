@@ -6,13 +6,12 @@
 #include <stdlib.h>
 
 int main(int argc, char *argv[]) {
-  int shutdown_success = 0;
   MausPrivate *priv = g_new0(MausPrivate, 1);
 
   // Parse config
-  if (!maus_reload_config(priv)) {
-    g_fprintf(stderr, "Critical: exiting.\n");
-    exit(EXIT_FAILURE);
+  if (!maus_load_config(priv)) {
+    g_fprintf(stderr, "Failed to load configuration files.\n");
+    return EXIT_FAILURE;
   }
 
   // Set up pins
@@ -30,8 +29,8 @@ int main(int argc, char *argv[]) {
   }
 
   // Shutdown
-  g_printf("Shutting down.\n");
-  shutdown_success = system(priv->shutdown_command);
+  g_printf("Shutting down: %s\n", priv->shutdown_command);
+  system(priv->shutdown_command);
 
-  return shutdown_success;
+  return EXIT_SUCCESS;
 }

@@ -164,7 +164,7 @@ int maus_gpio_write(gint pin, gint value) {
   return 0;
 }
 
-gboolean maus_reload_config(MausPrivate *priv) {
+gboolean maus_load_config(MausPrivate *priv) {
   // Initialize config file struct
   GKeyFile *config_file = g_key_file_new();
 

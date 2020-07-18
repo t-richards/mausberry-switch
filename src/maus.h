@@ -22,7 +22,7 @@ int maus_gpio_direction(gint pin, gint dir);
 int maus_gpio_interrupt(gint pin);
 int maus_gpio_wait(gint pin);
 int maus_gpio_write(gint pin, gint value);
-gboolean maus_reload_config(MausPrivate *priv);
+gboolean maus_load_config(MausPrivate *priv);
 gboolean maus_setup_gpio(MausPrivate *priv);
 
 #endif
