@@ -121,7 +121,6 @@ int maus_gpio_wait(gint pin)
     pfds[0].events = POLLPRI | POLLERR;
 
     for (;;) {
-
         int rc = poll(pfds, 1, -1);
         if(rc < 0) {
             int errsv = errno;

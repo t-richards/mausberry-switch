@@ -31,7 +31,7 @@ $ git clone https://github.com/t-richards/mausberry-switch.git
 $ cd mausberry-switch
 
 # Build the package
-$ ./script/build.sh
+$ ./script/build
 
 # Install the package
 $ sudo dpkg -i mausberry-switch*.deb

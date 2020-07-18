@@ -5,31 +5,10 @@
 #include <glib-unix.h>
 #include <stdlib.h>
 
-gboolean maus_handle_sighup(gpointer user_data)
-{
-    MausPrivate *priv = (MausPrivate*) user_data;
-    g_printf("Received SIGHUP, reloading configuration.\n");
-    maus_reload_config(priv);
-    maus_setup_gpio(priv);
-
-    return G_SOURCE_CONTINUE;
-}
-
-gboolean maus_handle_termint(gpointer _unused)
-{
-    g_fprintf(stderr, "Received SIGTERM or SIGINT, exiting.\n");
-    exit(EXIT_SUCCESS);
-}
-
 int main(int argc, char *argv[])
 {
     int shutdown_success = 0;
     MausPrivate *priv = g_new0(MausPrivate, 1);
-
-    // Set up signal handlers
-    g_unix_signal_add(SIGHUP, (GSourceFunc) maus_handle_sighup, priv);
-    g_unix_signal_add(SIGINT, (GSourceFunc) maus_handle_termint, NULL);
-    g_unix_signal_add(SIGTERM, (GSourceFunc) maus_handle_termint, NULL);
 
     // Parse config
     if(!maus_reload_config(priv)) {
