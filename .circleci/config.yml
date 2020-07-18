@@ -86,7 +86,7 @@ jobs:
           name: Install dependencies
           command: |
             apt-get update -q
-            apt-get install -qy build-essential dh-autoreconf libglib2.0-dev clang-format
+            apt-get install -qy build-essential dh-autoreconf libglib2.0-dev
 
       - run:
           name: Autoreconf
@@ -104,12 +104,24 @@ jobs:
           name: Test
           command: make check
 
+  lint:
+    docker:
+      - image: alpine:3.12
+
+    steps:
+      - checkout
+
       - run:
-          name: Lint
+          name: Install dependencies
+          command: apk add --no-cache clang
+
+      - run:
+          name: Lint code
           command: clang-format --dry-run --Werror src/*.{c,h}
 
 workflows:
-  build-and-test:
+  build-test-lint:
     jobs:
       - build
       - test
+      - lint
