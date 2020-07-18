@@ -10,7 +10,7 @@ int main(int argc, char *argv[]) {
 
   // Parse config
   if (!maus_load_config(priv)) {
-    g_fprintf(stderr, "Failed to load configuration files.\n");
+    g_fprintf(stderr, "Failed to load configuration file.\n");
     return EXIT_FAILURE;
   }
 
