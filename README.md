@@ -7,7 +7,44 @@ This is a daemon for [Raspberry Pi][rpi] devices that monitors GPIO pins 23 and
 in order to poweroff the system safely. It is intended to replace the
 [official setup script][mausberry-script].
 
-## Why not just use the official script available from  from their website?
+## Installing
+
+Fetch and install [the latest release][releases] directly on your Pi:
+
+```bash
+# Download the package
+wget https://github.com/t-richards/mausberry-switch/releases/download/0.8/mausberry-switch_0.8_armhf.deb
+
+# Install the package
+sudo dpkg -i mausberry-switch*.deb
+sudo apt-get -f install
+```
+
+## Usage
+
+The `mausberry-switch` systemd service will be automatically enabled and started when you install the package.
+
+To stop or disable the service, the appropriate `systemctl` command should be used. For example:
+
+```bash
+# Stop the service temporarily
+sudo systemctl stop mausberry-switch
+
+# Disable the service from automatically starting at boot
+sudo systemctl disable mausberry-switch
+```
+
+Configuration options (such as input/output pins, shutdown command/delay) are available in the primary configuration file, `/etc/mausberry-switch.conf`.
+
+After changing this file, you must restart the service to pick up the new configuration.
+
+```bash
+sudo systemctl restart mausberry-switch
+```
+
+Please see the configuration file for documentation on each supported option.
+
+## Why not just use the official script available from their website?
 
 For reference, we're talking about this code:
 
@@ -57,53 +94,13 @@ Here's the output of `top` showing the CPU and RAM usage of this program:
       PID USER      PR  NI  VIRT  RES  SHR S  %CPU %MEM    TIME+  COMMAND
     22682 root      20   0  1504  284  228 S   0.0  0.1   0:00.00 mausberry-switch
 
-## Alright, I'm convinced. How do I install this thing?
+# License
 
-Fetch and install the package directly on your Pi:
-
-```bash
-# Download the package
-wget https://github.com/t-richards/mausberry-switch/releases/download/0.8/mausberry-switch_0.8_armhf.deb
-
-# Install the package
-sudo dpkg -i mausberry-switch*.deb
-sudo apt-get -f install
-```
-
-Please also see the [releases][releases] section on GitHub.
-
-## Usage
-
-The `mausberry-switch` service will be automatically enabled and started when you install the package.
-
-To stop or disable the service, the appropriate `systemctl` command should be used. For example:
-
-```bash
-# Stop the service temporarily
-sudo systemctl stop mausberry-switch
-
-# Disable the service from automatically starting at boot
-sudo systemctl disable mausberry-switch
-```
-
-Configuration options (such as input/output pins, shutdown command/delay) are available in the primary configuration file, `/etc/mausberry-switch.conf`.
-
-After changing this file, some values may be hot-reloaded:
-
-```bash
-sudo systemctl reload mausberry-switch
-```
-
-While others may require a full service restart:
-
-```bash
-sudo systemctl restart mausberry-switch
-```
-
-Please see the configuration file for documentation on each supported option.
+The software is available as open source under the terms of the [MIT License][LICENSE].
 
 [build-doc]: doc/building.md
 [gpio-sysfs]: https://www.kernel.org/doc/Documentation/gpio/sysfs.txt
+[LICENSE]: LICENSE
 [mausberry-circuits]: http://mausberrycircuits.com/
 [mausberry-script]: http://files.mausberrycircuits.com/setup.sh
 [releases]: https://github.com/t-richards/mausberry-switch/releases
