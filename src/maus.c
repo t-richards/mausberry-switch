@@ -168,16 +168,17 @@ gboolean maus_load_config(MausPrivate *priv) {
   // Initialize config file struct
   GKeyFile *config_file = g_key_file_new();
 
-  // Load configuration from file
+  // Parse configuration file
   gboolean load_result = g_key_file_load_from_file(
       config_file, SYSCONFDIR "/mausberry-switch.conf", G_KEY_FILE_NONE, NULL);
 
   if (!load_result) {
-    g_fprintf(stderr, "Failed to read config file!\n");
+    g_fprintf(stderr, "Failed to load configuration file: '%s'\n",
+              SYSCONFDIR "/mausberry-switch.conf");
     return FALSE;
   }
 
-  // Read keys
+  // Load config options into memory
   priv->shutdown_command =
       g_key_file_get_string(config_file, "Config", "ShutdownCommand", NULL);
   priv->shutdown_delay =

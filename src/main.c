@@ -8,9 +8,8 @@
 int main(int argc, char *argv[]) {
   MausPrivate *priv = g_new0(MausPrivate, 1);
 
-  // Parse config
+  // Parse and print config
   if (!maus_load_config(priv)) {
-    g_fprintf(stderr, "Failed to load configuration file.\n");
     return EXIT_FAILURE;
   }
 
@@ -19,9 +18,9 @@ int main(int argc, char *argv[]) {
 
   // Wait for switch state to change
   int result = maus_gpio_wait(priv->pin_out);
-  g_printf("Power switch pressed! (received a %d)!\n", result);
+  g_printf("Power switch pressed. (received a %d)\n", result);
 
-  // Delay
+  // Optional shutdown delay
   if (priv->shutdown_delay > 0) {
     g_printf("Waiting %d seconds before shutting down.\n",
              priv->shutdown_delay);
