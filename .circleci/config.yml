@@ -117,7 +117,7 @@ jobs:
 
       - run:
           name: Lint code
-          command: clang-format --dry-run --Werror src/*.{c,h}
+          command: clang-format --dry-run --Werror src/*.c src/*.h
 
 workflows:
   build-test-lint:
