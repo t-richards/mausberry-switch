@@ -31,5 +31,7 @@ int main(int argc, char *argv[]) {
   g_printf("Shutting down: %s\n", priv->shutdown_command);
   system(priv->shutdown_command);
 
+  g_free(priv);
+
   return EXIT_SUCCESS;
 }
