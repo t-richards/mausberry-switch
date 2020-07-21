@@ -4,6 +4,7 @@
 #include "config.h"
 
 #include <glib.h>
+#include <gpiod.h>
 
 typedef struct {
   gchar *shutdown_command;
