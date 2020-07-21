@@ -147,7 +147,9 @@ int maus_gpio_interrupt(gint pin) {
     return -1;
   }
 
+  fsync(fd);
   close(fd);
+
   return 0;
 }
 
@@ -201,7 +203,7 @@ int maus_gpio_wait(gint pin) {
 }
 
 int maus_gpio_write(gint pin, gint value) {
-  const char s_values_str[] = "01";
+  const char value_chr = '0' + value;
 
   char path[BUFSZ] = {0};
   int errno_sv;
@@ -216,7 +218,7 @@ int maus_gpio_write(gint pin, gint value) {
     return -1;
   }
 
-  if (1 != write(fd, &s_values_str[VALUE_LOW == value ? 0 : 1], 1)) {
+  if (1 != write(fd, &value_chr, 1)) {
     errno_sv = errno;
     g_fprintf(stderr, "Failed to write value %d to pin %d: %s\n", value, pin,
               strerror(errno_sv));

@@ -94,6 +94,10 @@ Here's the output of `top` showing the CPU and RAM usage of this program:
       PID USER      PR  NI  VIRT  RES  SHR S  %CPU %MEM    TIME+  COMMAND
     22682 root      20   0  1504  284  228 S   0.0  0.1   0:00.00 mausberry-switch
 
+# Roadmap
+
+ - [ ] Replace legacy sysfs code with new chardev API / libgpiod (2020)
+
 # License
 
 The software is available as open source under the terms of the [MIT License][LICENSE].
