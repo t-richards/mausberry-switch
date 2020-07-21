@@ -1,13 +1,15 @@
 AM_CPPFLAGS = \
 	-DSYSCONFDIR=\"$(sysconfdir)\" \
-	$(GLIB_CFLAGS)
+	$(GLIB_CFLAGS) \
+	$(GPIOD_CFLAGS)
 
 bin_PROGRAMS = \
 	mausberry-switch
 
 mausberry_switch_LDADD = \
 	libmaus.a \
-	$(GLIB_LIBS)
+	$(GLIB_LIBS) \
+	$(GPIOD_LIBS)
 
 mausberry_switch_SOURCES = \
 	main.c
