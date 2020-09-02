@@ -32,7 +32,8 @@ int main(int argc, char *argv[]) {
   result = system(priv->shutdown_command);
   if (result == -1) {
     int errno_sv = errno;
-    g_fprintf(stderr, "Error executing shutdown command: %s\n", strerror(errno_sv));
+    g_fprintf(stderr, "Error executing shutdown command: %s\n",
+              strerror(errno_sv));
   }
 
   g_free(priv);
