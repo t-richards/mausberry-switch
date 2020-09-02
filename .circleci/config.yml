@@ -1,4 +1,5 @@
 version: 2.1
+
 jobs:
   build:
     docker:
@@ -40,6 +41,8 @@ jobs:
       - run:
           name: Make
           command: make
+
+      - sonarcloud/scan
 
       - run:
           name: Make install
@@ -118,6 +121,15 @@ jobs:
       - run:
           name: Lint code
           command: clang-format --dry-run --Werror src/*.c src/*.h
+
+orbs:
+  sonarcloud: sonarsource/sonarcloud@1.0.1
+
+workflows:
+  main:
+    jobs:
+      - build:
+          context: SonarCloud
 
 workflows:
   build-test-lint:
