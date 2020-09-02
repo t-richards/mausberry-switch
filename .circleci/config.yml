@@ -126,14 +126,9 @@ orbs:
   sonarcloud: sonarsource/sonarcloud@1.0.1
 
 workflows:
-  main:
+  build-test-lint:
     jobs:
       - build:
           context: SonarCloud
-
-workflows:
-  build-test-lint:
-    jobs:
-      - build
       - test
       - lint
