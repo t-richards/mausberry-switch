@@ -119,3 +119,10 @@ jobs:
       - run:
           name: Lint code
           command: clang-format --dry-run --Werror src/*.c src/*.h
+
+workflows:
+  main:
+    jobs:
+      - build
+      - test
+      - lint
