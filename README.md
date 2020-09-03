@@ -3,7 +3,7 @@
 [![CircleCI](https://circleci.com/gh/t-richards/mausberry-switch.svg?style=shield)](https://circleci.com/gh/t-richards/mausberry-switch)
 
 This is a daemon for [Raspberry Pi][rpi] devices that monitors GPIO pins 23 and
-24, waiting for a low signal from a [Mausberry Circuits switch][mausberry-circuits]
+24, waiting for a high signal from a [Mausberry Circuits switch][mausberry-circuits]
 in order to poweroff the system safely. It is intended to replace the
 [official setup script][mausberry-script].
 
@@ -93,6 +93,10 @@ Here's the output of `top` showing the CPU and RAM usage of this program:
 
       PID USER      PR  NI  VIRT  RES  SHR S  %CPU %MEM    TIME+  COMMAND
     22682 root      20   0  1504  284  228 S   0.0  0.1   0:00.00 mausberry-switch
+
+# Roadmap
+
+ - [ ] Replace legacy sysfs code with new chardev API / libgpiod (2021)
 
 # License
 

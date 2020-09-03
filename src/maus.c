@@ -20,80 +20,136 @@
 int maus_gpio_export(gint pin) {
   gchar buffer[BUFSZ] = {0};
   gint format_len;
-  ssize_t write_len;
+  int errno_sv;
   int fd;
 
   fd = g_open("/sys/class/gpio/export", O_WRONLY);
   if (-1 == fd) {
-    g_printf("Failed to open export for writing\n");
+    errno_sv = errno;
+    g_fprintf(stderr, "Failed to open export for writing: %s\n",
+              strerror(errno_sv));
     return -1;
   }
 
   format_len = g_snprintf(buffer, BUFSZ, "%d", pin);
-  write_len = write(fd, buffer, format_len);
+  if (-1 == write(fd, buffer, format_len)) {
+    errno_sv = errno;
+    g_fprintf(stderr, "Failed to export pin %d: %s\n", pin, strerror(errno_sv));
+    return -1;
+  }
+
+  fsync(fd);
   close(fd);
+
   return 0;
 }
 
 int maus_gpio_unexport(gint pin) {
   gchar buffer[BUFSZ] = {0};
   gint format_len;
-  ssize_t write_len;
+  int errno_sv;
   int fd;
 
   fd = g_open("/sys/class/gpio/unexport", O_WRONLY);
   if (-1 == fd) {
-    g_printf("Failed to open unexport for writing\n");
+    errno_sv = errno;
+    g_fprintf(stderr, "Failed to open unexport for writing: %s\n",
+              strerror(errno_sv));
     return -1;
   }
 
   format_len = g_snprintf(buffer, BUFSZ, "%d", pin);
-  write_len = write(fd, buffer, format_len);
+  if (-1 == write(fd, buffer, format_len)) {
+    errno_sv = errno;
+    g_fprintf(stderr, "Failed to unexport pin %d: %s\n", pin,
+              strerror(errno_sv));
+    return -1;
+  }
+
+  fsync(fd);
   close(fd);
+
   return 0;
 }
 
-int maus_gpio_direction(gint pin, gint dir) {
-  const char s_directions_str[] = "in\0out";
-
+int maus_gpio_direction_in(gint pin) {
   gchar path[BUFSZ] = {0};
+  int errno_sv;
   int fd;
 
   g_snprintf(path, BUFSZ, "/sys/class/gpio/gpio%d/direction", pin);
   fd = g_open(path, O_WRONLY);
   if (-1 == fd) {
-    g_fprintf(stderr, "Failed to open gpio direction for writing\n");
+    errno_sv = errno;
+    g_fprintf(stderr, "Failed to open direction for writing: %s\n",
+              strerror(errno_sv));
     return -1;
   }
 
-  if (-1 == write(fd, &s_directions_str[DIRECTION_IN == dir ? 0 : 3],
-                  DIRECTION_IN == dir ? 2 : 3)) {
-    g_fprintf(stderr, "Failed to set gpio direction\n");
+  if (-1 == write(fd, DIRECTION_IN, sizeof(DIRECTION_IN))) {
+    errno_sv = errno;
+    g_fprintf(stderr, "Failed to set direction of pin %d to %s: %s\n", pin,
+              DIRECTION_IN, strerror(errno_sv));
     return -1;
   }
 
+  fsync(fd);
   close(fd);
+
+  return 0;
+}
+
+int maus_gpio_direction_out(gint pin) {
+  gchar path[BUFSZ] = {0};
+  int errno_sv;
+  int fd;
+
+  g_snprintf(path, BUFSZ, "/sys/class/gpio/gpio%d/direction", pin);
+  fd = g_open(path, O_WRONLY);
+  if (-1 == fd) {
+    errno_sv = errno;
+    g_fprintf(stderr, "Failed to open direction for writing: %s\n",
+              strerror(errno_sv));
+    return -1;
+  }
+
+  if (-1 == write(fd, DIRECTION_OUT, sizeof(DIRECTION_OUT))) {
+    errno_sv = errno;
+    g_fprintf(stderr, "Failed to set direction of pin %d to %s: %s\n", pin,
+              DIRECTION_OUT, strerror(errno_sv));
+    return -1;
+  }
+
+  fsync(fd);
+  close(fd);
+
   return 0;
 }
 
 int maus_gpio_interrupt(gint pin) {
   char path[BUFSZ] = {0};
-  const char when_to_return[] = "both";
+  int errno_sv;
   int fd;
 
   g_snprintf(path, BUFSZ, "/sys/class/gpio/gpio%d/edge", pin);
   fd = g_open(path, O_WRONLY);
   if (-1 == fd) {
-    g_fprintf(stderr, "Failed to open gpio edge for writing\n");
+    errno_sv = errno;
+    g_fprintf(stderr, "Failed to open edge %d for writing: %s\n", pin,
+              strerror(errno_sv));
     return -1;
   }
 
-  if (-1 == write(fd, when_to_return, 4)) {
-    g_fprintf(stderr, "Failed to configure gpio as interrupt source\n");
+  if (-1 == write(fd, WHEN_TO_RETURN, sizeof(WHEN_TO_RETURN))) {
+    errno_sv = errno;
+    g_fprintf(stderr, "Failed to configure pin %d as interrupt source: %s\n",
+              pin, strerror(errno_sv));
     return -1;
   }
 
+  fsync(fd);
   close(fd);
+
   return 0;
 }
 
@@ -101,13 +157,16 @@ int maus_gpio_wait(gint pin) {
   int value = -1;
   char path[BUFSZ] = {0};
   char value_str[BUFSZ] = {0};
+  int errno_sv;
   int fd;
 
   // open gpio file descriptor
   g_snprintf(path, BUFSZ, "/sys/class/gpio/gpio%d/value", pin);
   fd = g_open(path, O_RDONLY);
   if (-1 == fd) {
-    g_fprintf(stderr, "Failed to open gpio value for reading\n");
+    errno_sv = errno;
+    g_fprintf(stderr, "Failed to open pin %d for reading: %s\n", pin,
+              strerror(errno_sv));
     return -1;
   }
 
@@ -119,9 +178,10 @@ int maus_gpio_wait(gint pin) {
   for (;;) {
     int rc = poll(pfds, 1, -1);
     if (rc < 0) {
-      int errsv = errno;
-      if (errsv != EAGAIN && errsv != EINTR && errsv != EINVAL) {
-        g_fprintf(stderr, "An error occurred while polling the switch\n");
+      errno_sv = errno;
+      if (errno_sv != EAGAIN && errno_sv != EINTR && errno_sv != EINVAL) {
+        g_fprintf(stderr, "An error occurred while polling the switch: %s\n",
+                  strerror(errno_sv));
         return -1;
       }
     }
@@ -143,24 +203,31 @@ int maus_gpio_wait(gint pin) {
 }
 
 int maus_gpio_write(gint pin, gint value) {
-  const char s_values_str[] = "01";
+  const char value_chr = '0' + value;
 
   char path[BUFSZ] = {0};
+  int errno_sv;
   int fd;
 
   snprintf(path, BUFSZ, "/sys/class/gpio/gpio%d/value", pin);
   fd = g_open(path, O_WRONLY);
   if (-1 == fd) {
-    g_fprintf(stderr, "Failed to open gpio value for writing\n");
+    errno_sv = errno;
+    g_fprintf(stderr, "Failed to open pin %d for writing: %s\n", pin,
+              strerror(errno_sv));
     return -1;
   }
 
-  if (1 != write(fd, &s_values_str[VALUE_LOW == value ? 0 : 1], 1)) {
-    g_fprintf(stderr, "Failed to write value\n");
+  if (1 != write(fd, &value_chr, 1)) {
+    errno_sv = errno;
+    g_fprintf(stderr, "Failed to write value %d to pin %d: %s\n", value, pin,
+              strerror(errno_sv));
     return -1;
   }
 
+  fsync(fd);
   close(fd);
+
   return 0;
 }
 
@@ -209,8 +276,8 @@ gboolean maus_setup_gpio(MausPrivate *priv) {
     g_fprintf(stderr, "GPIO pins not exported.\n");
 
   // Set GPIO directions
-  if (-1 == maus_gpio_direction(priv->pin_out, DIRECTION_IN) ||
-      -1 == maus_gpio_direction(priv->pin_in, DIRECTION_OUT))
+  if (-1 == maus_gpio_direction_in(priv->pin_out) ||
+      -1 == maus_gpio_direction_out(priv->pin_in))
     g_fprintf(stderr, "GPIO directions not set.\n");
 
   // Initialize switch state
