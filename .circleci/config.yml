@@ -114,11 +114,34 @@ jobs:
 
       - run:
           name: Install dependencies
-          command: apk add --no-cache clang
+          command: apk add --no-cache --update clang
 
       - run:
           name: Lint code
           command: clang-format --dry-run --Werror src/*.c src/*.h
+
+  scan:
+    docker:
+      - image: alpine:3.12
+        environment:
+          CC: clang
+
+    steps:
+      - checkout
+
+      - run:
+          name: Install dependencies
+          command: apk add --no-cache --update alpine-sdk automake autoconf clang glib-dev libtool
+
+      - run:
+          name: Setup build
+          command: |
+            autoreconf -i -f
+            ./configure
+
+      - run:
+          name: Scan build
+          command: scan-build make
 
 workflows:
   main:
@@ -126,3 +149,4 @@ workflows:
       - build
       - test
       - lint
+      - scan
