@@ -141,7 +141,10 @@ jobs:
 
       - run:
           name: Scan build
-          command: scan-build make
+          command: scan-build --status-bugs -o /tmp/mausbery-switch make
+
+      - store_artifacts:
+          path: /tmp/mausbery-switch
 
 workflows:
   main:

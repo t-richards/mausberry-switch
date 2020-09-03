@@ -29,12 +29,12 @@ int main(int argc, char *argv[]) {
 
   // Shutdown
   g_printf("Shutting down: %s\n", priv->shutdown_command);
-  result = system(priv->shutdown_command);
-  if (result == -1) {
-    int errno_sv = errno;
-    g_fprintf(stderr, "Error executing shutdown command: %s\n",
-              strerror(errno_sv));
-  }
+  system(priv->shutdown_command);
+  // if (result == -1) {
+  //   int errno_sv = errno;
+  //   g_fprintf(stderr, "Error executing shutdown command: %s\n",
+  //             strerror(errno_sv));
+  // }
 
   g_free(priv);
 
