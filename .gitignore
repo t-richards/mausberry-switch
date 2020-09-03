@@ -25,12 +25,14 @@ autom4te.cache
 compile
 config.*
 configure
+confdefs.h
 depcomp
 INSTALL
 install-sh
 intltool-*
 libtool
 ltmain.sh
+m4
 Makefile
 Makefile.in*
 missing

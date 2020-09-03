@@ -9,6 +9,8 @@ in order to poweroff the system safely. It is intended to replace the
 
 ## Installing
 
+This software is only supported on the latest version of Raspberry Pi OS (currently based on Debian Buster).
+
 Fetch and install [the latest release][releases] directly on your Pi:
 
 ```bash
