@@ -131,7 +131,7 @@ jobs:
 
       - run:
           name: Install dependencies
-          command: apk add --no-cache --update alpine-sdk automake autoconf clang glib-dev libtool
+          command: apk add --no-cache --update alpine-sdk automake autoconf clang clang-analyzer glib-dev libtool
 
       - run:
           name: Setup build
