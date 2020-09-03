@@ -37,6 +37,7 @@ int main(int argc, char *argv[]) {
   }
 
   g_free(priv);
+  g_free(priv);
 
   return EXIT_SUCCESS;
 }
