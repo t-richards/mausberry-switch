@@ -247,6 +247,9 @@ void maus_load_config(MausPrivate *priv) {
     priv->shutdown_delay = 0;
     priv->pin_out = 23;
     priv->pin_in = 24;
+
+    maus_print_config(priv);
+
     return;
   }
 
@@ -258,13 +261,17 @@ void maus_load_config(MausPrivate *priv) {
   priv->pin_in = g_key_file_get_integer(config_file, "Pins", "In", NULL);
   priv->pin_out = g_key_file_get_integer(config_file, "Pins", "Out", NULL);
 
+  maus_print_config(priv);
+}
+
+void maus_print_config(MausPrivate *priv) {
   // Print configuration
-  g_printf("== Mausberry Switch Configuration ==\n");
-  g_printf("Shutdown command: '%s'\n", priv->shutdown_command);
-  g_printf("Shutdown delay: %d\n", priv->shutdown_delay);
-  g_printf("Pin IN: %d\n", priv->pin_in);
-  g_printf("Pin OUT: %d\n", priv->pin_out);
-  g_printf("== End Mausberry Switch Configuration ==\n");
+  g_printf("\n== Mausberry Switch Configuration ==\n");
+  g_printf("Command:  %s\n", priv->shutdown_command);
+  g_printf("Delay  :  %d\n", priv->shutdown_delay);
+  g_printf("Pin IN :  %d\n", priv->pin_in);
+  g_printf("Pin OUT:  %d\n", priv->pin_out);
+  g_printf("== End Mausberry Switch Configuration ==\n\n");
 }
 
 gboolean maus_setup_gpio(MausPrivate *priv) {
