@@ -1,9 +1,10 @@
 [Unit]
 Description=Mausberry switch GPIO monitoring daemon
-After=syslog.target
 
 [Service]
 ExecStart=/usr/bin/mausberry-switch
+Restart=on-failure
+RestartSec=5s
 
 [Install]
 WantedBy=multi-user.target
