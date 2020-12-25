@@ -25,7 +25,7 @@ int maus_gpio_direction_out(gint pin);
 int maus_gpio_interrupt(gint pin);
 int maus_gpio_wait(gint pin);
 int maus_gpio_write(gint pin, gint value);
-gboolean maus_load_config(MausPrivate *priv);
+void maus_load_config(MausPrivate *priv);
 gboolean maus_setup_gpio(MausPrivate *priv);
 
 #endif

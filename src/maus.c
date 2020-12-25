@@ -231,7 +231,7 @@ int maus_gpio_write(gint pin, gint value) {
   return 0;
 }
 
-gboolean maus_load_config(MausPrivate *priv) {
+void maus_load_config(MausPrivate *priv) {
   // Initialize config file struct
   GKeyFile *config_file = g_key_file_new();
 
@@ -240,9 +240,14 @@ gboolean maus_load_config(MausPrivate *priv) {
       config_file, SYSCONFDIR "/mausberry-switch.conf", G_KEY_FILE_NONE, NULL);
 
   if (!load_result) {
-    g_fprintf(stderr, "Failed to load configuration file: '%s'\n",
+    g_fprintf(stderr,
+              "Failed to load configuration file: '%s', using defaults.\n",
               SYSCONFDIR "/mausberry-switch.conf");
-    return FALSE;
+    priv->shutdown_command = g_strdup("systemctl poweroff");
+    priv->shutdown_delay = 0;
+    priv->pin_out = 23;
+    priv->pin_in = 24;
+    return;
   }
 
   // Load config options into memory
@@ -260,8 +265,6 @@ gboolean maus_load_config(MausPrivate *priv) {
   g_printf("Pin IN: %d\n", priv->pin_in);
   g_printf("Pin OUT: %d\n", priv->pin_out);
   g_printf("== End Mausberry Switch Configuration ==\n");
-
-  return TRUE;
 }
 
 gboolean maus_setup_gpio(MausPrivate *priv) {
@@ -275,20 +278,20 @@ gboolean maus_setup_gpio(MausPrivate *priv) {
 
   // Set GPIO directions
   if (-1 == maus_gpio_direction_in(priv->pin_out)) {
-    g_fprintf(stderr, "Failed set direction of output pin.\n");
+    g_fprintf(stderr, "Failed to set direction of output pin.\n");
   }
   if (-1 == maus_gpio_direction_out(priv->pin_in)) {
-    g_fprintf(stderr, "Failed set direction of input pin.\n");
+    g_fprintf(stderr, "Failed to set direction of input pin.\n");
   }
 
   // Initialize switch state
   if (-1 == maus_gpio_write(priv->pin_in, VALUE_HIGH)) {
-    g_fprintf(stderr, "GPIO not initialized.\n");
+    g_fprintf(stderr, "Failed to initialize GPIO switch state.\n");
   }
 
   // Register 'out' pin as interrupt source
   if (-1 == maus_gpio_interrupt(priv->pin_out)) {
-    g_fprintf(stderr, "GPIO not configured as interrupt.\n");
+    g_fprintf(stderr, "Failed to configure GPIO switch as interrupt.\n");
   }
 
   return TRUE;
