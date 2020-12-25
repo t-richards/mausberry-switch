@@ -265,28 +265,31 @@ gboolean maus_load_config(MausPrivate *priv) {
 }
 
 gboolean maus_setup_gpio(MausPrivate *priv) {
-  // Reset GPIO pins
-  if (-1 == maus_gpio_unexport(priv->pin_out) ||
-      -1 == maus_gpio_unexport(priv->pin_in))
-    g_fprintf(stderr, "GPIO pins not reset.\n");
-
   // Enable GPIO pins
-  if (-1 == maus_gpio_export(priv->pin_out) ||
-      -1 == maus_gpio_export(priv->pin_in))
-    g_fprintf(stderr, "GPIO pins not exported.\n");
+  if (-1 == maus_gpio_export(priv->pin_out)) {
+    g_fprintf(stderr, "Failed to enable output pin.\n");
+  }
+  if (-1 == maus_gpio_export(priv->pin_in)) {
+    g_fprintf(stderr, "Failed to enable input pin.\n");
+  }
 
   // Set GPIO directions
-  if (-1 == maus_gpio_direction_in(priv->pin_out) ||
-      -1 == maus_gpio_direction_out(priv->pin_in))
-    g_fprintf(stderr, "GPIO directions not set.\n");
+  if (-1 == maus_gpio_direction_in(priv->pin_out)) {
+    g_fprintf(stderr, "Failed set direction of output pin.\n");
+  }
+  if (-1 == maus_gpio_direction_out(priv->pin_in)) {
+    g_fprintf(stderr, "Failed set direction of input pin.\n");
+  }
 
   // Initialize switch state
-  if (-1 == maus_gpio_write(priv->pin_in, VALUE_HIGH))
+  if (-1 == maus_gpio_write(priv->pin_in, VALUE_HIGH)) {
     g_fprintf(stderr, "GPIO not initialized.\n");
+  }
 
   // Register 'out' pin as interrupt source
-  if (-1 == maus_gpio_interrupt(priv->pin_out))
+  if (-1 == maus_gpio_interrupt(priv->pin_out)) {
     g_fprintf(stderr, "GPIO not configured as interrupt.\n");
+  }
 
   return TRUE;
 }
