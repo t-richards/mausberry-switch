@@ -231,7 +231,7 @@ int maus_gpio_write(gint pin, gint value) {
   return 0;
 }
 
-gboolean maus_load_config(MausPrivate *priv) {
+void maus_load_config(MausPrivate *priv) {
   // Initialize config file struct
   GKeyFile *config_file = g_key_file_new();
 
@@ -240,9 +240,17 @@ gboolean maus_load_config(MausPrivate *priv) {
       config_file, SYSCONFDIR "/mausberry-switch.conf", G_KEY_FILE_NONE, NULL);
 
   if (!load_result) {
-    g_fprintf(stderr, "Failed to load configuration file: '%s'\n",
+    g_fprintf(stderr,
+              "Failed to load configuration file: '%s', using defaults.\n",
               SYSCONFDIR "/mausberry-switch.conf");
-    return FALSE;
+    priv->shutdown_command = g_strdup("systemctl poweroff");
+    priv->shutdown_delay = 0;
+    priv->pin_out = 23;
+    priv->pin_in = 24;
+
+    maus_print_config(priv);
+
+    return;
   }
 
   // Load config options into memory
@@ -253,40 +261,45 @@ gboolean maus_load_config(MausPrivate *priv) {
   priv->pin_in = g_key_file_get_integer(config_file, "Pins", "In", NULL);
   priv->pin_out = g_key_file_get_integer(config_file, "Pins", "Out", NULL);
 
-  // Print configuration
-  g_printf("== Mausberry Switch Configuration ==\n");
-  g_printf("Shutdown command: '%s'\n", priv->shutdown_command);
-  g_printf("Shutdown delay: %d\n", priv->shutdown_delay);
-  g_printf("Pin IN: %d\n", priv->pin_in);
-  g_printf("Pin OUT: %d\n", priv->pin_out);
-  g_printf("== End Mausberry Switch Configuration ==\n");
+  maus_print_config(priv);
+}
 
-  return TRUE;
+void maus_print_config(MausPrivate *priv) {
+  // Print configuration
+  g_printf("\n== Mausberry Switch Configuration ==\n");
+  g_printf("Command:  %s\n", priv->shutdown_command);
+  g_printf("Delay  :  %d\n", priv->shutdown_delay);
+  g_printf("Pin IN :  %d\n", priv->pin_in);
+  g_printf("Pin OUT:  %d\n", priv->pin_out);
+  g_printf("== End Mausberry Switch Configuration ==\n\n");
 }
 
 gboolean maus_setup_gpio(MausPrivate *priv) {
-  // Reset GPIO pins
-  if (-1 == maus_gpio_unexport(priv->pin_out) ||
-      -1 == maus_gpio_unexport(priv->pin_in))
-    g_fprintf(stderr, "GPIO pins not reset.\n");
-
   // Enable GPIO pins
-  if (-1 == maus_gpio_export(priv->pin_out) ||
-      -1 == maus_gpio_export(priv->pin_in))
-    g_fprintf(stderr, "GPIO pins not exported.\n");
+  if (-1 == maus_gpio_export(priv->pin_out)) {
+    g_fprintf(stderr, "Failed to enable output pin.\n");
+  }
+  if (-1 == maus_gpio_export(priv->pin_in)) {
+    g_fprintf(stderr, "Failed to enable input pin.\n");
+  }
 
   // Set GPIO directions
-  if (-1 == maus_gpio_direction_in(priv->pin_out) ||
-      -1 == maus_gpio_direction_out(priv->pin_in))
-    g_fprintf(stderr, "GPIO directions not set.\n");
+  if (-1 == maus_gpio_direction_in(priv->pin_out)) {
+    g_fprintf(stderr, "Failed to set direction of output pin.\n");
+  }
+  if (-1 == maus_gpio_direction_out(priv->pin_in)) {
+    g_fprintf(stderr, "Failed to set direction of input pin.\n");
+  }
 
   // Initialize switch state
-  if (-1 == maus_gpio_write(priv->pin_in, VALUE_HIGH))
-    g_fprintf(stderr, "GPIO not initialized.\n");
+  if (-1 == maus_gpio_write(priv->pin_in, VALUE_HIGH)) {
+    g_fprintf(stderr, "Failed to initialize GPIO switch state.\n");
+  }
 
   // Register 'out' pin as interrupt source
-  if (-1 == maus_gpio_interrupt(priv->pin_out))
-    g_fprintf(stderr, "GPIO not configured as interrupt.\n");
+  if (-1 == maus_gpio_interrupt(priv->pin_out)) {
+    g_fprintf(stderr, "Failed to configure GPIO switch as interrupt.\n");
+  }
 
   return TRUE;
 }
