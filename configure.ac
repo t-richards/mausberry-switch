@@ -1,6 +1,6 @@
 AC_PREREQ(2.69)
 
-AC_INIT([Mausberry Switch], [0.8], [https://github.com/t-richards/mausberry-switch/issues], [mausberry-switch], [https://github.com/t-richards/mausberry-switch])
+AC_INIT([Mausberry Switch], [0.9], [https://github.com/t-richards/mausberry-switch/issues], [mausberry-switch], [https://github.com/t-richards/mausberry-switch])
 AC_CONFIG_SRCDIR(src)
 AC_CONFIG_HEADERS([config.h])
 AC_CONFIG_MACRO_DIR([m4])

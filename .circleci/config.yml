@@ -55,7 +55,7 @@ jobs:
               -t deb \
               -a armhf \
               -n mausberry-switch \
-              -v 0.8 \
+              -v 0.9 \
               -C /tmp/installdir \
               -p mausberry-switch_VERSION_ARCH.deb \
               -d "libglib2.0-0 >= 2.42" \
@@ -69,7 +69,7 @@ jobs:
             tar tvf data.tar.gz
 
       - store_artifacts:
-          path: mausberry-switch_0.8_armhf.deb
+          path: mausberry-switch_0.9_armhf.deb
 
   test:
     docker:
