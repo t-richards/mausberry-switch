@@ -2,6 +2,32 @@ name: App
 on: [push]
 
 jobs:
+  scan:
+    runs-on: ubuntu-latest
+    container: alpine:3.16
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Install deps
+        run: apk add --no-cache --update alpine-sdk automake autoconf clang clang-analyzer glib-dev libtool
+
+      - name: Autoreconf
+        run: autoreconf -i -f
+
+      - name: Configure
+        run: ./configure
+
+      - name: Scan build
+        run: scan-build --status-bugs -o /tmp/mausbery-switch make
+
+      - name: Upload scan results
+        uses: actions/upload-artifact@v3
+        with:
+          name: scan-results
+          path: /tmp/mausbery-switch
+
   lint:
     runs-on: ubuntu-latest
     container: alpine:3.16
