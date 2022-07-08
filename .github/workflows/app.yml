@@ -1,0 +1,133 @@
+name: App
+on: [push]
+
+jobs:
+  scan:
+    runs-on: ubuntu-latest
+    container: alpine:3.16
+    env:
+      CC: clang
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Install deps
+        run: apk add --no-cache --update alpine-sdk automake autoconf clang clang-analyzer glib-dev libtool
+
+      - name: Autoreconf
+        run: autoreconf -i -f
+
+      - name: Configure
+        run: ./configure
+
+      - name: Scan build
+        run: scan-build --status-bugs -o /tmp/mausberry-switch make
+
+      - name: Upload scan results
+        uses: actions/upload-artifact@v3
+        with:
+          name: scan-results
+          path: /tmp/mausberry-switch/*
+
+  lint:
+    runs-on: ubuntu-latest
+    container: alpine:3.16
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Install deps
+        run: apk add --no-cache --update clang-extra-tools
+
+      - name: Lint code
+        run: clang-format --dry-run --Werror **/*.c **/*.h
+
+  test:
+    runs-on: ubuntu-latest
+    container: debian:bullseye
+    env:
+      CFLAGS: -O2 -pipe -fstack-protector-strong -fno-plt
+      CPPFLAGS: -D_FORTIFY_SOURCE=2
+      DEBIAN_FRONTEND: noninteractive
+      LDFLAGS: -Wl,-O1,--sort-common,--as-needed,-z,relro
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Install deps
+        run: |
+          apt-get update -q
+          apt-get install -qy build-essential dh-autoreconf libglib2.0-dev
+
+      - name: Autoreconf
+        run: autoreconf -i -f
+
+      - name: Configure
+        run: ./configure
+
+      - name: Make
+        run: make
+
+      - name: Test
+        run: make check
+
+  build:
+    runs-on: ubuntu-latest
+    container: debian:bullseye
+    env:
+      CFLAGS: -O2 -pipe -fstack-protector-strong -fno-plt
+      CPPFLAGS: -D_FORTIFY_SOURCE=2
+      DEBIAN_FRONTEND: noninteractive
+      LDFLAGS: -Wl,-O1,--sort-common,--as-needed,-z,relro
+      PKG_CONFIG_ALLOW_CROSS: 1
+      PKG_CONFIG_PATH: /usr/lib/arm-linux-gnueabihf/pkgconfig/
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Install deps
+        run: |
+          dpkg --add-architecture armhf
+          apt-get update -q
+          apt-get install -qy crossbuild-essential-armhf curl dh-autoreconf libglib2.0-dev:armhf
+
+      - name: Create install directory
+        run: mkdir -p /tmp/installdir
+
+      - name: Autoreconf
+        run: autoreconf -i -f
+
+      - name: Configure
+        run: ./configure --prefix=/usr --build=x86_64-linux-gnu --host=arm-linux-gnueabihf
+
+      - name: Make
+        run: make
+
+      - name: Make install
+        run: make DESTDIR=/tmp/installdir install-strip
+
+      - name: Install nfpm
+        run: |
+          mkdir -p /tmp/nfpm
+          cd /tmp/nfpm
+          curl -LOs https://github.com/goreleaser/nfpm/releases/download/v2.16.0/nfpm_2.16.0_Linux_x86_64.tar.gz
+          tar xvf nfpm_2.16.0_Linux_x86_64.tar.gz
+          mv nfpm /usr/local/bin/nfpm
+
+      - name: Build package
+        run: nfpm package -p deb
+
+      - name: Inspect package
+        run: |
+          ar x mausberry-switch_*.deb
+          tar tvf data.tar.gz
+
+      - name: Upload package
+        uses: actions/upload-artifact@v3
+        with:
+          name: mausberry-switch_0.9.1_armhf.deb
+          path: mausberry-switch_0.9.1_armhf.deb

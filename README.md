@@ -1,7 +1,5 @@
 # mausberry-switch
 
-[![CircleCI](https://img.shields.io/circleci/build/github/t-richards/mausberry-switch?style=flat-square)](https://circleci.com/gh/t-richards/mausberry-switch)
-
 This is a daemon for [Raspberry Pi][rpi] devices that monitors GPIO pins 23 and
 24, waiting for a high signal from a [Mausberry Circuits switch][mausberry-circuits]
 in order to poweroff the system safely. It is intended to replace the
@@ -98,7 +96,7 @@ Here's the output of `top` showing the CPU and RAM usage of this program:
 
 # Roadmap
 
- - [ ] Replace legacy sysfs code with new chardev API / libgpiod (2021)
+ - [ ] Replace sysfs code with libgpiod (maybe?)
 
 # License
 

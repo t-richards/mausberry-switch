@@ -1,0 +1,26 @@
+name: mausberry-switch
+arch: armhf
+platform: linux
+version: v0.9.1
+section: default
+maintainer: Tom Richards <tom@tomrichards.net>
+description: GPIO monitoring service.
+homepage: https://github.com/t-richards/mausberry-switch
+license: MIT
+
+depends:
+  - 'libglib2.0-0 >= 2.50'
+
+contents:
+  # Config file
+  - src: data/mausberry-switch.conf
+    dst: /etc/mausberry-switch.conf
+    type: config
+
+  # Systemd service
+  - src: data/mausberry-switch.service
+    dst: /lib/systemd/system/mausberry-switch.service
+
+  # Main binary
+  - src: /tmp/installdir/usr/bin/mausberry-switch
+    dst: /usr/bin/mausberry-switch
