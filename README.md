@@ -96,7 +96,7 @@ Here's the output of `top` showing the CPU and RAM usage of this program:
 
 # Roadmap
 
- - [ ] Replace legacy sysfs code with new chardev API / libgpiod (2021)
+ - [ ] Replace sysfs code with libgpiod (maybe?)
 
 # License
 
