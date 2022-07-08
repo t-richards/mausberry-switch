@@ -5,6 +5,8 @@ jobs:
   scan:
     runs-on: ubuntu-latest
     container: alpine:3.16
+    env:
+      CC: clang
 
     steps:
       - name: Checkout repository
