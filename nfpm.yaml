@@ -1,6 +1,7 @@
 name: mausberry-switch
 arch: armhf
 platform: linux
+version: v0.9
 maintainer: Tom Richards <tom@tomrichards.net>
 description: GPIO monitoring service.
 homepage: https://github.com/t-richards/mausberry-switch
