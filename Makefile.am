@@ -2,7 +2,7 @@ AUTOMAKE_OPTIONS = 1.7
 
 ACLOCAL_AMFLAGS = -I m4
 
-SUBDIRS = src data tests
+SUBDIRS = src tests
 
 EXTRA_DIST =		\
 	LICENSE		\

@@ -44,7 +44,7 @@ jobs:
         run: autoreconf -i -f
 
       - name: Configure
-        run: ./configure --prefix=/usr --sysconfdir=/etc --build=x86_64-linux-gnu --host=arm-linux-gnueabihf
+        run: ./configure --prefix=/usr --build=x86_64-linux-gnu --host=arm-linux-gnueabihf
 
       - name: Make
         run: make
