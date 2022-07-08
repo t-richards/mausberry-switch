@@ -35,7 +35,7 @@ jobs:
         run: |
           dpkg --add-architecture armhf
           apt-get update -q
-          apt-get install -qy crossbuild-essential-armhf dh-autoreconf libglib2.0-dev:armhf
+          apt-get install -qy crossbuild-essential-armhf curl dh-autoreconf libglib2.0-dev:armhf
 
       - name: Create install directory
         run: mkdir -p /tmp/installdir
