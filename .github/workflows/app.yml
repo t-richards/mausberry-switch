@@ -63,6 +63,11 @@ jobs:
       - name: Build package
         run: nfpm package -p deb
 
+      - name: Inspect package
+        run: |
+          ar x mausberry-switch_*.deb
+          tar tvf data.tar.gz
+
       - name: Upload package
         uses: actions/upload-artifact@v3
         with:
