@@ -8,7 +8,7 @@ homepage: https://github.com/t-richards/mausberry-switch
 license: MIT
 
 depends:
-  - 'libglib2.0-0 >= 2.42'
+  - 'libglib2.0-0 >= 2.50'
 
 contents:
   - src: /tmp/installdir
