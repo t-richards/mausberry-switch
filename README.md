@@ -1,7 +1,5 @@
 # mausberry-switch
 
-[![CircleCI](https://img.shields.io/circleci/build/github/t-richards/mausberry-switch?style=flat-square)](https://circleci.com/gh/t-richards/mausberry-switch)
-
 This is a daemon for [Raspberry Pi][rpi] devices that monitors GPIO pins 23 and
 24, waiting for a high signal from a [Mausberry Circuits switch][mausberry-circuits]
 in order to poweroff the system safely. It is intended to replace the

@@ -1,0 +1,14 @@
+name: mausberry-switch
+arch: armhf
+platform: linux
+maintainer: Tom Richards <tom@tomrichards.net>
+description: GPIO monitoring service.
+homepage: https://github.com/t-richards/mausberry-switch
+license: MIT
+
+depends:
+  - 'libglib2.0-0 >= 2.42'
+
+contents:
+  - src: /tmp/installdir
+    dst: /

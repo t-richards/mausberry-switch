@@ -1,0 +1,61 @@
+name: App
+on: [push]
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    container: alpine:3.16
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Install deps
+        run: apk add --no-cache --update clang-extra-tools
+
+      - name: Lint code
+        run: clang-format --dry-run --Werror **/*.c **/*.h
+
+  build:
+    runs-on: ubuntu-latest
+    container: debian:bullseye
+    env:
+      CFLAGS: -O2 -pipe -fstack-protector-strong -fno-plt
+      CPPFLAGS: -D_FORTIFY_SOURCE=2
+      DEBIAN_FRONTEND: noninteractive
+      LDFLAGS: -Wl,-O1,--sort-common,--as-needed,-z,relro
+      PKG_CONFIG_ALLOW_CROSS: 1
+      PKG_CONFIG_PATH: /usr/lib/arm-linux-gnueabihf/pkgconfig/
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Install deps
+        run: |
+          dpkg --add-architecture armhf
+          apt-get update -q
+          apt-get install -qy crossbuild-essential-armhf dh-autoreconf libglib2.0-dev:armhf
+
+      - name: Create install directory
+        run: mkdir -p /tmp/installdir
+
+      - name: Configure
+        run: ./configure --prefix=/usr --sysconfdir=/etc --build=x86_64-linux-gnu --host=arm-linux-gnueabihf
+
+      - name: Make
+        run: make
+
+      - name: Make install
+        run: make DESTDIR=/tmp/installdir install-strip
+
+      - name: Install nfpm
+        run: |
+          mkdir -p /tmp/nfpm
+          cd /tmp/nfpm
+          wget https://github.com/goreleaser/nfpm/releases/download/v2.16.0/nfpm_2.16.0_Linux_x86_64.tar.gz
+          tar xvf nfpm_2.16.0_Linux_x86_64.tar.gz
+          mv nfpm /usr/local/bin/nfpm
+
+      - name: Build package
+        run: nfpm package -p deb
