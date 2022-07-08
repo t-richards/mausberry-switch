@@ -16,6 +16,36 @@ jobs:
       - name: Lint code
         run: clang-format --dry-run --Werror **/*.c **/*.h
 
+  test:
+    runs-on: ubuntu-latest
+    container: debian:bullseye
+    env:
+      CFLAGS: -O2 -pipe -fstack-protector-strong -fno-plt
+      CPPFLAGS: -D_FORTIFY_SOURCE=2
+      DEBIAN_FRONTEND: noninteractive
+      LDFLAGS: -Wl,-O1,--sort-common,--as-needed,-z,relro
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Install deps
+        run: |
+          apt-get update -q
+          apt-get install -qy build-essential dh-autoreconf libglib2.0-dev
+
+      - name: Autoreconf
+        run: autoreconf -i -f
+
+      - name: Configure
+        run: ./configure
+
+      - name: Make
+        run: make
+
+      - name: Test
+        run: make check
+
   build:
     runs-on: ubuntu-latest
     container: debian:bullseye
