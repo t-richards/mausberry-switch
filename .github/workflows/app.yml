@@ -40,6 +40,9 @@ jobs:
       - name: Create install directory
         run: mkdir -p /tmp/installdir
 
+      - name: Autoreconf
+        run: autoreconf -i -f
+
       - name: Configure
         run: ./configure --prefix=/usr --sysconfdir=/etc --build=x86_64-linux-gnu --host=arm-linux-gnueabihf
 
