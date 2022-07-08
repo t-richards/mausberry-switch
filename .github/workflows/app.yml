@@ -62,3 +62,9 @@ jobs:
 
       - name: Build package
         run: nfpm package -p deb
+
+      - name: Upload package
+        uses: actions/upload-artifact@v3
+        with:
+          name: mausberry-switch_0.9.1_armhf.deb
+          path: mausberry-switch_0.9.1_armhf.deb
