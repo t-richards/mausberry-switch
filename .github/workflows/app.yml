@@ -22,13 +22,13 @@ jobs:
         run: ./configure
 
       - name: Scan build
-        run: scan-build --status-bugs -o /tmp/mausbery-switch make
+        run: scan-build --status-bugs -o /tmp/mausberry-switch make
 
       - name: Upload scan results
         uses: actions/upload-artifact@v3
         with:
           name: scan-results
-          path: /tmp/mausbery-switch
+          path: /tmp/mausberry-switch/*
 
   lint:
     runs-on: ubuntu-latest
